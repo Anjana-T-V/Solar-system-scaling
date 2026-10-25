@@ -132,10 +132,17 @@ button.ghost{font:inherit;font-weight:800;padding:10px 18px;border-radius:999px;
       <circle cx="150" cy="130" r="40" fill="none" stroke="#0004" stroke-width="2"/>
     </g>
   </svg>
+
   <div class="hook">
     <p id="hooktext">Psst, kiddos! I have something exciting to tell you.</p>
     <button class="ghost" id="hear" type="button">Click here to listen to me</button>
+
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="ghost" id="pauseVoice" type="button">Pause voice</button>
+      <button class="ghost" id="stopVoice" type="button">Stop voice</button>
+    </div>
   </div>
+
   <h1>Scale your own Solar System</h1>
   <p class="lead">Got a road, a corridor or a playground? Tell us how long it is, and we will show you where to place the Sun and every planet.</p>
   <div class="ask">
@@ -207,6 +214,7 @@ let voiceOn=true,talkId=0;
 const VP=[[1.15,.88],[2,1.12],[1.9,1],[1.7,1],[1.5,1.02],[1.1,.85],[1.3,.9],[1.8,1],[1.6,.95]];
 const NOVELTY=/Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Wobble|Good News|Jester|Organ|Superstar|Trinoids|Whisper|Zarvox|Albert|Fred|Junior|Ralph|Kathy/i;
 const KIDLY=/Samantha|Karen|Moira|Tessa|Veena|Serena|Fiona|Zira|Hazel|Susan|Heera|Google UK English Female|Google US English|Female/i;
+
 function pickVoice(i){
   const all=speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang)&&!NOVELTY.test(v.name));
   const kid=all.filter(v=>KIDLY.test(v.name));
@@ -214,19 +222,24 @@ function pickVoice(i){
   const pool=nat.length?nat:(kid.length?kid:all);
   return pool.length?pool[(+i||0)%pool.length]:null;
 }
+
 function mouth(i,on){const m=$("mo"+i);if(m)m.classList.toggle("talk",on);}
+
 /* Recorded clips play through the Web Audio API (more reliable than an audio tag inside a shared page). */
 let actx=null,curSrc=null,curIdx=null;const BUF={};
+
 function stopAudio(){
   if(curSrc){try{curSrc.onended=null;curSrc.stop();}catch(e){}curSrc=null;}
   if(curIdx!==null){mouth(curIdx,false);curIdx=null;}
 }
+
 function getBuf(k){
   if(BUF[k])return Promise.resolve(BUF[k]);
   const bin=atob(AUDIO[k].split(",")[1]),u=new Uint8Array(bin.length);
   for(let j=0;j<bin.length;j++)u[j]=bin.charCodeAt(j);
   return new Promise((ok,no)=>{const r=actx.decodeAudioData(u.buffer,b=>{BUF[k]=b;ok(b);},no);if(r&&r.then)r.then(b=>{BUF[k]=b;ok(b);},no);});
 }
+
 function say(t,i){
   if(!voiceOn)return;
   const k=String(i);
@@ -247,13 +260,14 @@ function say(t,i){
     mouth(i,true);src.start();
   }).catch(()=>{if(my===talkId)speakBrowser(t,i,my);});
 }
+
 function speakBrowser(t,i,fixedMy){
   if(!("speechSynthesis" in window))return;
   try{
     speechSynthesis.cancel();
     const my=fixedMy||++talkId,p=VP[i]||[1.3,.92],v=pickVoice(i);
-    // One sentence at a time, so the voice takes natural little pauses.
     const parts=t.match(/[^.!?]+[.!?]+/g)||[t];
+
     parts.forEach((sent,k)=>{
       const u=new SpeechSynthesisUtterance(sent.trim());
       u.pitch=p[0];u.rate=p[1];u.lang="en-GB";
@@ -264,6 +278,7 @@ function speakBrowser(t,i,fixedMy){
     });
   }catch(e){}
 }
+
 function fmt(m){
   if(m>=1)return m.toFixed(2)+" m";
   if(m>=.01)return (m*100).toFixed(2)+" cm";
@@ -277,35 +292,42 @@ function face(cx,cy,r,c,name,i){
   if(name==="Sun")s+=`<circle cx="${cx}" cy="${cy}" r="${r+12}" fill="${c}" opacity=".25"/>`;
   s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}" stroke="#0007" stroke-width="3"/>`;
   if(name==="Saturn")s+=`<ellipse cx="${cx}" cy="${cy}" rx="${r*1.75}" ry="${r*.42}" fill="none" stroke="#f4e6b0" stroke-width="${r*.14}" transform="rotate(-14 ${cx} ${cy})"/>`;
-  // closed eyes: two little downward curves
+
   s+=`<g id="ec${i}"><path d="M${cx-r*.5} ${cy-r*.12} Q${cx-r*.33} ${cy+r*.12} ${cx-r*.16} ${cy-r*.12}" fill="none" stroke="#1b1030" stroke-width="${lw}" stroke-linecap="round"/><path d="M${cx+r*.16} ${cy-r*.12} Q${cx+r*.33} ${cy+r*.12} ${cx+r*.5} ${cy-r*.12}" fill="none" stroke="#1b1030" stroke-width="${lw}" stroke-linecap="round"/></g>`;
-  // open eyes (hidden until the planet is tapped)
+
   s+=`<g id="eo${i}" class="eo" display="none"><circle cx="${cx-r*.33}" cy="${cy-r*.15}" r="${r*.22}" fill="#fff"/><circle cx="${cx+r*.33}" cy="${cy-r*.15}" r="${r*.22}" fill="#fff"/><circle cx="${cx-r*.29}" cy="${cy-r*.1}" r="${r*.11}" fill="#1b1030"/><circle cx="${cx+r*.37}" cy="${cy-r*.1}" r="${r*.11}" fill="#1b1030"/></g>`;
+
   s+=`<g id="mo${i}" class="mouth"><path d="M${cx-r*.36} ${cy+r*.25} Q${cx} ${cy+r*.75} ${cx+r*.36} ${cy+r*.25}" fill="none" stroke="#1b1030" stroke-width="${lw}" stroke-linecap="round"/></g>`;
   s+=`<text id="zz${i}" class="zz" x="${cx+r*.62}" y="${cy-r*.62}" font-size="${Math.max(14,r*.55)}" fill="#fff7e0">z</text>`;
   s+=`</g>`;
   return s;
 }
+
 function calc(D){
   const S=P[0][2],kN=P[8][2]/S;
-  const R=0.01175*D;               /* Sun radius in the model (m), rounded to 4 significant figures */
-  const au=(D-R*(1+kN))/30.06,k=R/S; /* 1 AU in metres, and 1 km (real) = k m (model) */
+  const R=0.01175*D;
+  const au=(D-R*(1+kN))/30.06,k=R/S;
   return{R,au,rows:P.map(p=>({n:p[0],x:R+p[1]*au,r:p[2]*k,c:p[3],d:p[4]}))};
 }
+
 function show(){
   stopAudio();if("speechSynthesis" in window)speechSynthesis.cancel();
+
   const D=parseFloat($("len").value);
   if(!(D>=20)){$("e").innerHTML='<div class="err">Please type a road length of at least 20 metres.</div>';return;}
   if(D>5000){$("e").innerHTML='<div class="err">That is a very long road! Try 5,000 metres or less.</div>';return;}
+
   $("e").innerHTML="";
   const {R,au,rows}=calc(D);
   const Dtxt=(Math.round(D*100)/100).toString();
   $("rt").textContent="Your Solar System on a "+Dtxt+" m road";
+
   const x0=40,w=920,roadY=330;
   let s=`<rect x="${x0}" y="${roadY}" width="${w}" height="56" rx="10" fill="#3a3f5c"/>`;
   s+=`<line x1="${x0+8}" y1="${roadY+28}" x2="${x0+w-8}" y2="${roadY+28}" stroke="#ffcb2f" stroke-width="4" stroke-dasharray="22 16"/>`;
   s+=`<text x="${x0}" y="${roadY+80}" fill="#fff7e0" font-size="22" font-weight="800" font-family="Nunito,sans-serif">Start (0 m)</text>`;
   s+=`<text x="${x0+w}" y="${roadY+80}" text-anchor="end" fill="#fff7e0" font-size="22" font-weight="800" font-family="Nunito,sans-serif">End (${Dtxt} m)</text>`;
+
   rows.forEach((p,i)=>{
     const sx=60+i*110,px=x0+p.x/D*w;
     s+=`<line x1="${sx}" y1="212" x2="${px}" y2="${roadY+28}" stroke="${p.c}" stroke-width="3" stroke-dasharray="7 6" opacity=".9"/>`;
@@ -317,10 +339,11 @@ function show(){
     const hy=110-p.d-16;
     s+=`<rect class="pl" data-i="${i}" tabindex="0" role="button" aria-label="Wake up ${p.n}" x="${sx-52}" y="${hy}" width="104" height="${214-hy}" rx="18" fill="transparent"/>`;
   });
+
   $("svg").innerHTML=s;
   $("bubble").textContent="The planets are fast asleep. Tap a planet to wake it up!";
   $("bubble").style.borderColor="";
-  // Only the tapped planet is awake; everyone else sleeps with eyes closed.
+
   const wake=i=>{
     rows.forEach((_,j)=>{
       const awake=j===i;
@@ -330,19 +353,30 @@ function show(){
       $("hl"+j).setAttribute("opacity",awake?1:0);
       if(!awake)mouth(j,false);
     });
-    const g=$("pg"+i);g.classList.remove("hop");g.getBoundingClientRect();g.classList.add("hop");
+    const g=$("pg"+i);
+    g.classList.remove("hop");
+    g.getBoundingClientRect();
+    g.classList.add("hop");
   };
+
   const pick=i=>{
     wake(i);
     $("bubble").style.borderColor=rows[i].c;
     $("bubble").textContent=C[i];
     say(C[i],i);
   };
+
   $("svg").querySelectorAll(".pl").forEach(el=>{
     const i=+el.getAttribute("data-i");
     el.onclick=()=>pick(i);
-    el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pick(i);}};
+    el.onkeydown=e=>{
+      if(e.key==="Enter"||e.key===" "){
+        e.preventDefault();
+        pick(i);
+      }
+    };
   });
+
   $("cards").innerHTML=rows.map((p,i)=>{
     let t;
     if(i===0)t=`Its <em>centre</em> goes ${p.x.toFixed(2)} m from the start, so its left edge touches the start of the road. Draw a circle of radius <em>${fmt(p.r)}</em>. The Sun is big!`;
@@ -350,21 +384,74 @@ function show(){
     if(i===8)t+=` Its edge reaches the end of your road.`;
     return `<div class="card"><div class="bw"><div class="ball" style="background:${p.c};width:${p.d*1.7}px;height:${p.d*1.7}px"></div></div><div><b>${p.n}</b><p>${t}</p></div></div>`;
   }).join("");
+
   $("fun").textContent="On your road, the Earth is only "+fmt(2*rows[3].r)+" wide, and the Earth–Sun distance is "+fmt(au)+". A ₹1 coin is about 2.5 cm across!";
-  $("start").hidden=true;$("result").hidden=false;window.scrollTo(0,0);
+  $("start").hidden=true;
+  $("result").hidden=false;
+  window.scrollTo(0,0);
 }
 
 $("go").onclick=show;
 
 const HOOK="Hey, explorers! Have you ever wondered how far the Sun is from Earth? Or how tiny Mercury is compared to Earth? Or how enormous Jupiter is? We know these things, but it can be really hard to imagine them because the Solar System is HUGE! So, how can we bring something this huge down to a size we can actually see and understand? That's where scaling comes in! Scaling means making something bigger or smaller while keeping the same proportions. And today, we're going to scale down the Solar System and bring it right onto your road!";
 
-const hear=()=>{$("hooktext").textContent=HOOK;$("hear").textContent="Listen again";say(HOOK,"a");};
+const hear=()=>{
+  $("hooktext").textContent=HOOK;
+  $("hear").textContent="Listen again";
+  say(HOOK,"a");
+};
+
 $("hear").onclick=hear;
 $("astro").onclick=hear;
-$("vt").onclick=()=>{voiceOn=!voiceOn;$("vt").textContent="Voice: "+(voiceOn?"on":"off");if(!voiceOn){stopAudio();if("speechSynthesis" in window)speechSynthesis.cancel();document.querySelectorAll(".mouth").forEach(m=>m.classList.remove("talk"));}};
-$("len").onkeydown=e=>{if(e.key==="Enter")show();};
-$("again").onclick=()=>{stopAudio();if("speechSynthesis" in window)speechSynthesis.cancel();$("result").hidden=true;$("start").hidden=false;$("len").focus();};
+
+/* ---- Starting astronaut voice controls ---- */
+let introVoicePaused=false;
+
+$("pauseVoice").onclick=()=>{
+  if(!("speechSynthesis" in window))return;
+
+  if(speechSynthesis.paused){
+    speechSynthesis.resume();
+    introVoicePaused=false;
+    $("pauseVoice").textContent="Pause voice";
+  }else{
+    speechSynthesis.pause();
+    introVoicePaused=true;
+    $("pauseVoice").textContent="Resume voice";
+  }
+};
+
+$("stopVoice").onclick=()=>{
+  if("speechSynthesis" in window)speechSynthesis.cancel();
+  introVoicePaused=false;
+  $("pauseVoice").textContent="Pause voice";
+  document.querySelectorAll(".mouth").forEach(m=>m.classList.remove("talk"));
+};
+
+$("vt").onclick=()=>{
+  voiceOn=!voiceOn;
+  $("vt").textContent="Voice: "+(voiceOn?"on":"off");
+
+  if(!voiceOn){
+    stopAudio();
+    if("speechSynthesis" in window)speechSynthesis.cancel();
+    document.querySelectorAll(".mouth").forEach(m=>m.classList.remove("talk"));
+  }
+};
+
+$("len").onkeydown=e=>{
+  if(e.key==="Enter")show();
+};
+
+$("again").onclick=()=>{
+  stopAudio();
+  if("speechSynthesis" in window)speechSynthesis.cancel();
+  $("result").hidden=true;
+  $("start").hidden=false;
+  $("len").focus();
+};
 
 </script>
 </body>
 </html>
+    
