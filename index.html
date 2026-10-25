@@ -70,8 +70,6 @@ button.ghost{font:inherit;font-weight:800;padding:10px 18px;border-radius:999px;
 .legend{margin:14px 0}
 .card b{font-family:"Baloo 2",sans-serif;font-size:1.25rem;line-height:1.2;display:block}
 .card p{margin:2px 0 0}
-.card em{color:var(--sun);font-style:normal;font-weight:800}
-.fun{background:var(--sun);color:#2a1a00;border-radius:20px;padding:14px 18px;font-weight:800;margin:16px 0}
 
 /* ---- Planet faces: asleep, awake, talking ---- */
 .pgrp{transform-box:fill-box;transform-origin:50% 50%}
@@ -172,8 +170,6 @@ button.ghost{font:inherit;font-weight:800;padding:10px 18px;border-radius:999px;
   <div class="legend">
     <p class="hint">Swipe sideways if the picture is cut off.</p>
   </div>
-
-  <div class="fun" id="fun"></div>
 
   <h2>Your instructions</h2>
   <p class="hint" style="margin:0 0 4px">Start at the beginning of your road. Measure every distance from there.</p>
@@ -565,8 +561,6 @@ function show(){
       </div>
     </div>`;
   }).join("");
-
-  $("fun").textContent="On your road, the Earth is only "+fmt(2*rows[3].r)+" wide, and the Earth–Sun distance is "+fmt(au)+". A ₹1 coin is about 2.5 cm across!";
 
   $("start").hidden=true;
   $("result").hidden=false;
