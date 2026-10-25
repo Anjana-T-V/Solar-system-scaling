@@ -6,7 +6,6 @@
 <title>Scale your own Solar System</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;700;800&display=swap');
-
 /* Layout concept: one dark night-sky page. An astronaut waves from inside a spaceship window and asks the hook question, stars drift behind everything, and sleepy planets wake up when tapped. */
 :root{--space:#020208;--space2:#05050d;--ink:#fff7e0;--muted:#c9c3f0;--sun:#ffcb2f;--coral:#ff7a59;--sky:#5cc8ff;--card:#241a64;--line:#4b3f9c;--road:#3a3f5c;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -18,7 +17,6 @@ background-attachment:fixed}
 main{position:relative;z-index:1;max-width:960px;margin:0 auto;padding-block:22px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 h1{font-family:"Baloo 2","Nunito",system-ui,sans-serif;font-weight:800;font-size:clamp(2.2rem,9vw,4rem);line-height:1;margin:6px 0 12px;text-wrap:balance}
 h2{font-family:"Baloo 2",sans-serif;font-size:1.5rem;margin:0 0 8px}
-
 /* ---- Moving sky: twinkling, drifting stars ---- */
 .sky{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
 .st{position:absolute;border-radius:50%;background:#fff;opacity:.2;animation:twinkle var(--tw) ease-in-out infinite,drift var(--dr) ease-in-out infinite alternate;animation-delay:var(--dl),var(--dl)}
@@ -26,7 +24,6 @@ h2{font-family:"Baloo 2",sans-serif;font-size:1.5rem;margin:0 0 8px}
 @keyframes drift{from{translate:0 0}to{translate:var(--dx) var(--dy)}}
 .flame{transform-box:fill-box;transform-origin:100% 50%;animation:flick .18s ease-in-out infinite alternate}
 @keyframes flick{from{transform:scaleX(.7)}to{transform:scaleX(1.25)}}
-
 /* ---- Start screen ---- */
 .hero{text-align:center;padding-top:10px}
 .hero .art{width:min(100%,400px);height:auto;display:block;margin:0 auto 6px}
@@ -51,7 +48,6 @@ button.ghost{font:inherit;font-weight:800;padding:10px 18px;border-radius:999px;
 :focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 .err{margin-top:12px;background:#ffd9d2;color:#6b1b0b;border-radius:14px;padding:10px 14px;font-weight:800}
 .hint{color:var(--muted);font-size:.95rem;margin:8px 0 0}
-
 /* ---- Result screen ---- */
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .top h1{font-size:clamp(1.7rem,6vw,2.6rem);margin:0}
@@ -70,7 +66,6 @@ button.ghost{font:inherit;font-weight:800;padding:10px 18px;border-radius:999px;
 .legend{margin:14px 0}
 .card b{font-family:"Baloo 2",sans-serif;font-size:1.25rem;line-height:1.2;display:block}
 .card p{margin:2px 0 0}
-
 /* ---- Planet faces: asleep, awake, talking ---- */
 .pgrp{transform-box:fill-box;transform-origin:50% 50%}
 .pgrp.hop{animation:hop .7s ease-out}
@@ -83,103 +78,190 @@ button.ghost{font:inherit;font-weight:800;padding:10px 18px;border-radius:999px;
 .zz{animation:zz 2.2s ease-in-out infinite;font-family:"Baloo 2",sans-serif;font-weight:800}
 @keyframes zz{0%{opacity:0;transform:translate(0,6px)}40%{opacity:1}100%{opacity:0;transform:translate(6px,-10px)}}
 .zz{transform-box:fill-box}
-
 @media(prefers-reduced-motion:reduce){
   .wave,.ship,.tw,.st,.flame,.eo,.zz,.mouth.talk,.pgrp.hop{animation:none}
 }
-
 </style>
 </head>
+
 <body>
+
 <div class="sky" id="sky" aria-hidden="true">
 </div>
 
 <main>
+
 <section id="start" class="hero">
+
   <svg class="art" id="astro" viewBox="0 0 360 250" role="img" aria-label="An astronaut waving from inside a spaceship window">
+
     <circle class="tw" cx="26" cy="30" r="2.4" fill="#fff"/>
     <circle class="tw" style="animation-delay:.7s" cx="120" cy="18" r="1.8" fill="#fff"/>
     <circle class="tw" style="animation-delay:1.4s" cx="250" cy="26" r="2.2" fill="#ffcb2f"/>
     <circle class="tw" style="animation-delay:.3s" cx="338" cy="40" r="2.4" fill="#fff"/>
     <circle class="tw" style="animation-delay:1.1s" cx="340" cy="210" r="1.8" fill="#fff"/>
     <circle class="tw" style="animation-delay:1.8s" cx="16" cy="190" r="1.8" fill="#fff"/>
-    <defs><clipPath id="pc"><circle cx="150" cy="130" r="40"/></clipPath></defs>
+
+    <defs>
+      <clipPath id="pc">
+        <circle cx="150" cy="130" r="40"/>
+      </clipPath>
+    </defs>
+
     <g class="ship">
+
       <path d="M92 88 L66 46 L134 88Z" fill="#ff7a59" stroke="#0004" stroke-width="3" stroke-linejoin="round"/>
       <path d="M92 172 L66 214 L134 172Z" fill="#ff7a59" stroke="#0004" stroke-width="3" stroke-linejoin="round"/>
       <path class="flame" d="M64 112 Q20 130 64 148 Z" fill="#ffcb2f" stroke="#ff7a59" stroke-width="3"/>
+
       <rect x="60" y="80" width="200" height="100" rx="48" fill="#f4f6ff" stroke="#0004" stroke-width="3"/>
+
       <path d="M232 80 Q302 92 314 130 Q302 168 232 180Z" fill="#ff7a59" stroke="#0004" stroke-width="3" stroke-linejoin="round"/>
+
       <circle cx="222" cy="130" r="13" fill="#5cc8ff" stroke="#0004" stroke-width="3"/>
+
       <circle cx="150" cy="130" r="40" fill="#1b1456"/>
+
       <g clip-path="url(#pc)">
-        <circle cx="128" cy="104" r="1.6" fill="#fff"/><circle cx="176" cy="108" r="1.4" fill="#ffcb2f"/>
+
+        <circle cx="128" cy="104" r="1.6" fill="#fff"/>
+        <circle cx="176" cy="108" r="1.4" fill="#ffcb2f"/>
+
         <ellipse cx="150" cy="176" rx="36" ry="24" fill="#f4f6ff" stroke="#0004" stroke-width="3"/>
+
         <g class="wave" style="transform-origin:176px 158px">
+
           <rect x="170" y="120" width="13" height="40" rx="6.5" fill="#f4f6ff" stroke="#0004" stroke-width="3"/>
+
           <circle cx="176.5" cy="118" r="8" fill="#ff7a59" stroke="#0004" stroke-width="3"/>
+
         </g>
+
         <circle cx="150" cy="128" r="26" fill="#f4f6ff" stroke="#0004" stroke-width="3"/>
+
         <ellipse cx="150" cy="130" rx="19" ry="16" fill="#33279a" stroke="#0004" stroke-width="3"/>
+
         <path d="M136 120 Q142 115 150 115" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="3.5" stroke-linecap="round"/>
-        <circle cx="143" cy="128" r="4.4" fill="#fff"/><circle cx="157" cy="128" r="4.4" fill="#fff"/>
-        <circle cx="144" cy="129" r="2.2" fill="#1b1030"/><circle cx="158" cy="129" r="2.2" fill="#1b1030"/>
-        <g id="moa" class="mouth"><path d="M143 137 Q150 144 157 137" fill="none" stroke="#fff7e0" stroke-width="3" stroke-linecap="round"/></g>
+
+        <circle cx="143" cy="128" r="4.4" fill="#fff"/>
+        <circle cx="157" cy="128" r="4.4" fill="#fff"/>
+
+        <circle cx="144" cy="129" r="2.2" fill="#1b1030"/>
+        <circle cx="158" cy="129" r="2.2" fill="#1b1030"/>
+
+        <g id="moa" class="mouth">
+          <path d="M143 137 Q150 144 157 137" fill="none" stroke="#fff7e0" stroke-width="3" stroke-linecap="round"/>
+        </g>
+
       </g>
+
       <circle cx="150" cy="130" r="40" fill="none" stroke="#b9c2e6" stroke-width="7"/>
       <circle cx="150" cy="130" r="40" fill="none" stroke="#0004" stroke-width="2"/>
+
     </g>
+
   </svg>
 
   <div class="hook">
-    <p id="hooktext">Psst, kiddos! I have something exciting to tell you.</p>
-    <button class="ghost" id="hear" type="button">Click here to listen to me</button>
 
-    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-      <button class="ghost" id="pauseVoice" type="button">Pause voice</button>
-    </div>
+    <p id="hooktext">
+      Psst, kiddos! I have something exciting to tell you.
+    </p>
+
+    <button class="ghost" id="astroVoice" type="button">
+      Voice: on
+    </button>
+
   </div>
 
   <h1>Scale your own Solar System</h1>
-  <p class="lead">Got a road, a corridor or a playground? Tell us how long it is, and we will show you where to place the Sun and every planet.</p>
+
+  <p class="lead">
+    Got a road, a corridor or a playground? Tell us how long it is,
+    and we will show you where to place the Sun and every planet.
+  </p>
 
   <div class="ask">
+
     <label for="len">How long is your road?</label>
+
     <div class="row">
+
       <input id="len" type="number" inputmode="decimal" min="20" max="5000" placeholder="400" aria-describedby="e">
-      <button class="go" id="go">Show me!</button>
+
+      <button class="go" id="go">
+        Show me!
+      </button>
+
     </div>
-    <p class="hint">Type the length in metres (at least 20 m).</p>
+
+    <p class="hint">
+      Type the length in metres (at least 20 m).
+    </p>
+
     <div id="e" role="alert"></div>
+
   </div>
+
 </section>
 
+
 <section id="result" hidden>
+
   <div class="top">
+
     <h1 id="rt"></h1>
-    <button class="ghost" id="again">Try another road</button>
+
+    <button class="ghost" id="again">
+      Try another road
+    </button>
+
   </div>
 
   <div class="pic">
-    <div id="bubble" class="bubble" aria-live="polite">The planets are fast asleep. Tap a planet to wake it up!</div>
-    <div class="scroll"><svg id="svg" viewBox="0 0 1000 440" role="group" aria-label="Map of where each planet goes on your road"></svg></div>
+
+    <div id="bubble" class="bubble" aria-live="polite">
+      The planets are fast asleep. Tap a planet to wake it up!
+    </div>
+
+    <div class="scroll">
+      <svg id="svg" viewBox="0 0 1000 440" role="group" aria-label="Map of where each planet goes on your road"></svg>
+    </div>
+
   </div>
 
-  <button class="ghost" id="vt" style="margin-bottom:8px">Voice: on</button>
+  <button class="ghost" id="vt" style="margin-bottom:8px">
+    Voice: on
+  </button>
 
   <div class="legend">
-    <p class="hint">Swipe sideways if the picture is cut off.</p>
+
+    <p class="hint">
+      Swipe sideways if the picture is cut off.
+    </p>
+
   </div>
 
   <h2>Your instructions</h2>
-  <p class="hint" style="margin:0 0 4px">Start at the beginning of your road. Measure every distance from there.</p>
+
+  <p class="hint" style="margin:0 0 4px">
+    Start at the beginning of your road. Measure every distance from there.
+  </p>
+
   <div class="cards" id="cards"></div>
-  <p class="hint">Data: NASA/JPL, Solar System Sizes and Distances.</p>
+
+  <p class="hint">
+    Data: NASA/JPL, Solar System Sizes and Distances.
+  </p>
+
 </section>
+
 </main>
 
 <script>
+
 /* The recorded voices were left out to keep this file small, so the page uses the browser's own voice. */
+
 const AUDIO={};
 
 const P=[
@@ -208,20 +290,34 @@ const C=[
 
 const $=id=>document.getElementById(id);
 
+
 /* ---- Stars drifting in the background ---- */
+
 (function(){
+
   const sky=$("sky"),R=(a,b)=>a+Math.random()*(b-a);
+
   for(let i=0;i<46;i++){
+
     const s=document.createElement("span"),z=R(2,4.2);
+
     s.className="st";
+
     s.style.cssText=`left:${R(0,100)}%;top:${R(0,100)}%;width:${z}px;height:${z}px;--tw:${R(2,5)}s;--dr:${R(8,18)}s;--dl:${-R(0,8)}s;--dx:${R(-40,40)}px;--dy:${R(-30,30)}px`;
+
     if(i%7===0)s.style.background="#ffcb2f";
+
     sky.appendChild(s);
+
   }
+
 })();
 
+
 /* ---- Voice: bright, slow and friendly ---- */
+
 let voiceOn=true,talkId=0;
+
 const VP=[
 [1.15,.88],
 [2,1.12],
@@ -235,40 +331,61 @@ const VP=[
 ];
 
 const NOVELTY=/Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Wobble|Good News|Jester|Organ|Superstar|Trinoids|Whisper|Zarvox|Albert|Fred|Junior|Ralph|Kathy/i;
+
 const KIDLY=/Samantha|Karen|Moira|Tessa|Veena|Serena|Fiona|Zira|Hazel|Susan|Heera|Google UK English Female|Google US English|Female/i;
 
 function pickVoice(i){
+
   const all=speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang)&&!NOVELTY.test(v.name));
+
   const kid=all.filter(v=>KIDLY.test(v.name));
+
   const nat=all.filter(v=>/Natural|Neural|Enhanced|Premium|Online/i.test(v.name));
+
   const pool=nat.length?nat:(kid.length?kid:all);
+
   return pool.length?pool[(+i||0)%pool.length]:null;
+
 }
 
 function mouth(i,on){
+
   const m=$("mo"+i);
+
   if(m)m.classList.toggle("talk",on);
+
 }
 
 let actx=null,curSrc=null,curIdx=null;
+
 const BUF={};
 
 function stopAudio(){
+
   if(curSrc){
+
     try{
+
       curSrc.onended=null;
       curSrc.stop();
+
     }catch(e){}
+
     curSrc=null;
+
   }
 
   if(curIdx!==null){
+
     mouth(curIdx,false);
     curIdx=null;
+
   }
+
 }
 
 function getBuf(k){
+
   if(BUF[k])return Promise.resolve(BUF[k]);
 
   const bin=atob(AUDIO[k].split(",")[1]),u=new Uint8Array(bin.length);
@@ -276,6 +393,7 @@ function getBuf(k){
   for(let j=0;j<bin.length;j++)u[j]=bin.charCodeAt(j);
 
   return new Promise((ok,no)=>{
+
     const r=actx.decodeAudioData(
       u.buffer,
       b=>{
@@ -289,21 +407,28 @@ function getBuf(k){
       BUF[k]=b;
       ok(b);
     },no);
+
   });
+
 }
 
 function say(t,i){
+
   if(!voiceOn)return;
 
   const k=String(i);
 
   if(!AUDIO[k]){
+
     speakBrowser(t,i);
     return;
+
   }
 
   try{
+
     if("speechSynthesis" in window)speechSynthesis.cancel();
+
   }catch(e){}
 
   stopAudio();
@@ -311,19 +436,24 @@ function say(t,i){
   const my=++talkId;
 
   try{
+
     actx=actx||new (window.AudioContext||window.webkitAudioContext)();
 
     if(actx.state==="suspended")actx.resume();
 
   }catch(e){
+
     speakBrowser(t,i,my);
     return;
+
   }
 
   getBuf(k).then(b=>{
+
     if(my!==talkId)return;
 
     const src=actx.createBufferSource();
+
     src.buffer=b;
     src.connect(actx.destination);
 
@@ -331,33 +461,45 @@ function say(t,i){
     curIdx=i;
 
     src.onended=()=>{
+
       if(my===talkId){
+
         mouth(i,false);
         curIdx=null;
+
       }
+
     };
 
     mouth(i,true);
     src.start();
 
   }).catch(()=>{
+
     if(my===talkId)speakBrowser(t,i,my);
+
   });
+
 }
 
 function speakBrowser(t,i,fixedMy){
+
   if(!("speechSynthesis" in window))return;
 
   try{
+
     speechSynthesis.cancel();
 
     const my=fixedMy||++talkId;
+
     const p=VP[i]||[1.3,.92];
+
     const v=pickVoice(i);
 
     const parts=t.match(/[^.!?]+[.!?]+/g)||[t];
 
     parts.forEach((sent,k)=>{
+
       const u=new SpeechSynthesisUtterance(sent.trim());
 
       u.pitch=p[0];
@@ -365,32 +507,47 @@ function speakBrowser(t,i,fixedMy){
       u.lang="en-GB";
 
       if(v){
+
         u.voice=v;
         u.lang=v.lang;
+
       }
 
       if(k===0)u.onstart=()=>{
+
         if(my===talkId)mouth(i,true);
+
       };
 
       u.onend=u.onerror=()=>{
+
         if(my===talkId&&k===parts.length-1)mouth(i,false);
+
       };
 
       speechSynthesis.speak(u);
+
     });
 
   }catch(e){}
+
 }
 
 function fmt(m){
+
   if(m>=1)return m.toFixed(2)+" m";
+
   if(m>=.01)return (m*100).toFixed(2)+" cm";
+
   return (m*1000).toFixed(1)+" mm";
+
 }
 
-/* ---- A planet with a sleepy face (eyes closed) and an awake face (eyes open) ---- */
+
+/* ---- Planet faces: asleep, awake, talking ---- */
+
 function face(cx,cy,r,c,name,i){
+
   const lw=Math.max(2,r*.09);
 
   let s=`<g id="pg${i}" class="pgrp">`;
@@ -420,14 +577,20 @@ function face(cx,cy,r,c,name,i){
   </g>`;
 
   s+=`<text id="zz${i}" class="zz" x="${cx+r*.62}" y="${cy-r*.62}" font-size="${Math.max(14,r*.55)}" fill="#fff7e0">z</text>`;
+
   s+=`</g>`;
 
   return s;
+
 }
 
+
 function calc(D){
+
   const S=P[0][2],kN=P[8][2]/S;
+
   const R=0.01175*D;
+
   const au=(D-R*(1+kN))/30.06,k=R/S;
 
   return{
@@ -441,9 +604,12 @@ function calc(D){
       d:p[4]
     }))
   };
+
 }
 
+
 function show(){
+
   stopAudio();
 
   if("speechSynthesis" in window)
@@ -452,18 +618,23 @@ function show(){
   const D=parseFloat($("len").value);
 
   if(!(D>=20)){
+
     $("e").innerHTML='<div class="err">Please type a road length of at least 20 metres.</div>';
     return;
+
   }
 
   if(D>5000){
+
     $("e").innerHTML='<div class="err">That is a very long road! Try 5,000 metres or less.</div>';
     return;
+
   }
 
   $("e").innerHTML="";
 
   const {R,au,rows}=calc(D);
+
   const Dtxt=(Math.round(D*100)/100).toString();
 
   $("rt").textContent="Your Solar System on a "+Dtxt+" m road";
@@ -479,7 +650,9 @@ function show(){
   s+=`<text x="${x0+w}" y="${roadY+80}" text-anchor="end" fill="#fff7e0" font-size="22" font-weight="800" font-family="Nunito,sans-serif">End (${Dtxt} m)</text>`;
 
   rows.forEach((p,i)=>{
-    const sx=60+i*110,px=x0+p.x/D*w;
+
+    const sx=60+i*110,
+          px=x0+p.x/D*w;
 
     s+=`<line x1="${sx}" y1="212" x2="${px}" y2="${roadY+28}" stroke="${p.c}" stroke-width="3" stroke-dasharray="7 6" opacity=".9"/>`;
 
@@ -496,6 +669,7 @@ function show(){
     const hy=110-p.d-16;
 
     s+=`<rect class="pl" data-i="${i}" tabindex="0" role="button" aria-label="Wake up ${p.n}" x="${sx-52}" y="${hy}" width="104" height="${214-hy}" rx="18" fill="transparent"/>`;
+
   });
 
   $("svg").innerHTML=s;
@@ -504,7 +678,9 @@ function show(){
   $("bubble").style.borderColor="";
 
   const wake=i=>{
+
     rows.forEach((_,j)=>{
+
       const awake=j===i;
 
       $("eo"+j).setAttribute("display",awake?"inline":"none");
@@ -513,43 +689,61 @@ function show(){
       $("hl"+j).setAttribute("opacity",awake?1:0);
 
       if(!awake)mouth(j,false);
+
     });
 
     const g=$("pg"+i);
+
     g.classList.remove("hop");
     g.getBoundingClientRect();
     g.classList.add("hop");
+
   };
 
   const pick=i=>{
+
     wake(i);
+
     $("bubble").style.borderColor=rows[i].c;
     $("bubble").textContent=C[i];
+
     say(C[i],i);
+
   };
 
   $("svg").querySelectorAll(".pl").forEach(el=>{
+
     const i=+el.getAttribute("data-i");
 
     el.onclick=()=>pick(i);
 
     el.onkeydown=e=>{
+
       if(e.key==="Enter"||e.key===" "){
+
         e.preventDefault();
         pick(i);
+
       }
+
     };
+
   });
 
   $("cards").innerHTML=rows.map((p,i)=>{
+
     let t;
 
     if(i===0)
+
       t=`Its <em>centre</em> goes ${p.x.toFixed(2)} m from the start, so its left edge touches the start of the road. Draw a circle of radius <em>${fmt(p.r)}</em>. The Sun is big!`;
+
     else
+
       t=`Walk <em>${p.x.toFixed(2)} m</em> from the start and place ${p.n} here. Draw a circle of radius <em>${fmt(p.r)}</em>.`;
 
-    if(i===8)t+=` Its edge reaches the end of your road.`;
+    if(i===8)
+      t+=` Its edge reaches the end of your road.`;
 
     return `<div class="card">
       <div class="bw">
@@ -560,63 +754,92 @@ function show(){
         <p>${t}</p>
       </div>
     </div>`;
+
   }).join("");
 
   $("start").hidden=true;
   $("result").hidden=false;
 
   window.scrollTo(0,0);
+
 }
+
 
 $("go").onclick=show;
 
+
 const HOOK="Hey, explorers! Have you ever wondered how far the Sun is from Earth? Or how tiny Mercury is compared to Earth? Or how enormous Jupiter is? We know these things, but it can be really hard to imagine them because the Solar System is HUGE! So, how can we bring something this huge down to a size we can actually see and understand? That's where scaling comes in! Scaling means making something bigger or smaller while keeping the same proportions. And today, we're going to scale down the Solar System and bring it right onto your road!";
 
-const hear=()=>{
+
+/* ---- Astronaut voice ----
+   This is completely separate from the planet voice control. */
+
+let introVoiceOn=true;
+
+function hearAstronaut(){
+
+  if(!introVoiceOn)return;
+
   $("hooktext").textContent=HOOK;
-  $("hear").textContent="Listen again";
+
+  const oldVoiceOn=voiceOn;
+
+  voiceOn=true;
   say(HOOK,"a");
-};
+  voiceOn=oldVoiceOn;
 
-$("hear").onclick=hear;
-$("astro").onclick=hear;
+}
 
-/* ---- Starting astronaut voice pause/resume ---- */
-let introVoicePaused=false;
+$("astro").onclick=hearAstronaut;
 
-$("pauseVoice").onclick=()=>{
-  if(!("speechSynthesis" in window))return;
 
-  if(speechSynthesis.paused){
-    speechSynthesis.resume();
-    introVoicePaused=false;
-    $("pauseVoice").textContent="Pause voice";
-  }else{
-    speechSynthesis.pause();
-    introVoicePaused=true;
-    $("pauseVoice").textContent="Resume voice";
+$("astroVoice").onclick=()=>{
+
+  introVoiceOn=!introVoiceOn;
+
+  $("astroVoice").textContent=
+    "Voice: "+(introVoiceOn?"on":"off");
+
+  if(!introVoiceOn){
+
+    if("speechSynthesis" in window)
+      speechSynthesis.cancel();
+
   }
+
 };
+
+
+/* ---- Planet voice control: ORIGINAL CODE UNCHANGED ---- */
 
 $("vt").onclick=()=>{
   voiceOn=!voiceOn;
   $("vt").textContent="Voice: "+(voiceOn?"on":"off");
 
   if(!voiceOn){
+
     stopAudio();
 
     if("speechSynthesis" in window)
       speechSynthesis.cancel();
 
     document.querySelectorAll(".mouth").forEach(m=>m.classList.remove("talk"));
+
   }
+
 };
+
 
 $("len").onkeydown=e=>{
-  if(e.key==="Enter")show();
+
+  if(e.key==="Enter")
+    show();
+
 };
 
+
 $("again").onclick=()=>{
+
   stopAudio();
 
   if("speechSynthesis" in window)
@@ -625,8 +848,10 @@ $("again").onclick=()=>{
   $("result").hidden=true;
   $("start").hidden=false;
   $("len").focus();
+
 };
 
 </script>
+
 </body>
 </html>
