@@ -1,1086 +1,370 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Solar System Scaling</title>
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scale your own Solar System</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;700;800&display=swap');
 
-*{
-    box-sizing:border-box;
+/* Layout concept: one dark night-sky page. An astronaut waves from inside a spaceship window and asks the hook question, stars drift behind everything, and sleepy planets wake up when tapped. */
+:root{--space:#14104a;--space2:#2a1a6e;--ink:#fff7e0;--muted:#c9c3f0;--sun:#ffcb2f;--coral:#ff7a59;--sky:#5cc8ff;--card:#241a64;--line:#4b3f9c;--road:#3a3f5c;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;color:var(--ink);font-family:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5;min-height:100vh;
+background-color:var(--space);
+background-image:linear-gradient(180deg,var(--space),var(--space2));
+background-attachment:fixed}
+main{position:relative;z-index:1;max-width:960px;margin:0 auto;padding-block:22px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-family:"Baloo 2","Nunito",system-ui,sans-serif;font-weight:800;font-size:clamp(2.2rem,9vw,4rem);line-height:1;margin:6px 0 12px;text-wrap:balance}
+h2{font-family:"Baloo 2",sans-serif;font-size:1.5rem;margin:0 0 8px}
+
+/* ---- Moving sky: twinkling, drifting stars ---- */
+.sky{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.st{position:absolute;border-radius:50%;background:#fff;opacity:.2;animation:twinkle var(--tw) ease-in-out infinite,drift var(--dr) ease-in-out infinite alternate;animation-delay:var(--dl),var(--dl)}
+@keyframes twinkle{0%,100%{opacity:.15;transform:scale(.8)}50%{opacity:1;transform:scale(1.4)}}
+@keyframes drift{from{translate:0 0}to{translate:var(--dx) var(--dy)}}
+.flame{transform-box:fill-box;transform-origin:100% 50%;animation:flick .18s ease-in-out infinite alternate}
+@keyframes flick{from{transform:scaleX(.7)}to{transform:scaleX(1.25)}}
+
+/* ---- Start screen ---- */
+.hero{text-align:center;padding-top:10px}
+.hero .art{width:min(100%,400px);height:auto;display:block;margin:0 auto 6px}
+.wave{transform-origin:22px -2px;animation:wave 1.1s ease-in-out infinite alternate}
+@keyframes wave{from{transform:rotate(-25deg)}to{transform:rotate(18deg)}}
+.ship{animation:shipbob 3.4s ease-in-out infinite}
+@keyframes shipbob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+.tw{animation:twinkle 2.4s ease-in-out infinite}
+.hook{position:relative;max-width:480px;margin:18px auto 20px;background:var(--card);border:3px solid var(--line);border-radius:24px;padding:16px 18px 14px;text-align:left}
+.hook::before{content:"";position:absolute;top:-14px;left:calc(50% - 56px);width:24px;height:24px;background:var(--card);border-left:3px solid var(--line);border-top:3px solid var(--line);transform:rotate(45deg);border-radius:4px 0 0 0}
+.hook p{margin:0 0 12px;font-size:1.08rem;font-weight:700;line-height:1.45}
+.hook .ghost{background:var(--sun);color:#2a1a00;border-color:var(--sun)}
+#astro{cursor:pointer}
+.lead{max-width:44ch;margin:0 auto 22px;color:var(--muted);font-size:1.1rem}
+.ask{max-width:460px;margin:0 auto;background:var(--card);border:3px solid var(--line);border-radius:26px;padding:20px}
+.ask label{display:block;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:1.3rem;margin-bottom:10px}
+.row{display:flex;gap:10px}
+input{flex:1;min-width:0;font:inherit;font-weight:800;font-size:1.4rem;padding:12px 14px;border-radius:16px;border:3px solid var(--line);background:#120d3b;color:var(--ink)}
+button.go{font:inherit;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:1.25rem;padding:12px 20px;border-radius:16px;border:0;background:var(--coral);color:#fff;cursor:pointer;box-shadow:0 5px 0 #b64a2f}
+button.go:active{transform:translateY(3px);box-shadow:0 2px 0 #b64a2f}
+button.ghost{font:inherit;font-weight:800;padding:10px 18px;border-radius:999px;border:3px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
+.err{margin-top:12px;background:#ffd9d2;color:#6b1b0b;border-radius:14px;padding:10px 14px;font-weight:800}
+.hint{color:var(--muted);font-size:.95rem;margin:8px 0 0}
+
+/* ---- Result screen ---- */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.top h1{font-size:clamp(1.7rem,6vw,2.6rem);margin:0}
+.pic{background:#0c0833;border:3px solid var(--line);border-radius:22px;overflow:hidden}
+.pic .bubble{margin:12px}
+.scroll{overflow-x:auto}
+.pic svg{display:block;min-width:760px;width:100%}
+.cards{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:12px}
+.card{background:var(--card);border:3px solid var(--line);border-radius:20px;padding:14px 16px;display:flex;gap:12px}
+.card .bw{flex:none;width:80px;display:flex;justify-content:center;align-items:flex-start;padding-top:2px}
+.card .ball{border-radius:50%;border:3px solid #0006}
+.bubble{margin:12px 0;padding:14px 18px;border-radius:22px;border:3px solid var(--line);background:var(--card);font-weight:700;font-size:1.1rem;min-height:3.6em;transition:border-color .2s}
+.pl{cursor:pointer}
+.pl:focus{outline:none}
+.pl:focus-visible{stroke:#5cc8ff;stroke-width:3}
+.legend{margin:14px 0}
+.card b{font-family:"Baloo 2",sans-serif;font-size:1.25rem;line-height:1.2;display:block}
+.card p{margin:2px 0 0}
+.card em{color:var(--sun);font-style:normal;font-weight:800}
+.fun{background:var(--sun);color:#2a1a00;border-radius:20px;padding:14px 18px;font-weight:800;margin:16px 0}
+
+/* ---- Planet faces: asleep, awake, talking ---- */
+.pgrp{transform-box:fill-box;transform-origin:50% 50%}
+.pgrp.hop{animation:hop .7s ease-out}
+@keyframes hop{0%{transform:translateY(0) scale(1)}35%{transform:translateY(-16px) scale(1.14)}65%{transform:translateY(0) scale(.96)}100%{transform:translateY(0) scale(1)}}
+.eo{transform-box:fill-box;transform-origin:50% 50%;animation:blink 4.2s infinite}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.mouth{transform-box:fill-box;transform-origin:50% 30%}
+.mouth.talk{animation:talk .28s ease-in-out infinite alternate}
+@keyframes talk{from{transform:scaleY(.55)}to{transform:scaleY(1.35)}}
+.zz{animation:zz 2.2s ease-in-out infinite;font-family:"Baloo 2",sans-serif;font-weight:800}
+@keyframes zz{0%{opacity:0;transform:translate(0,6px)}40%{opacity:1}100%{opacity:0;transform:translate(6px,-10px)}}
+.zz{transform-box:fill-box}
+
+@media(prefers-reduced-motion:reduce){
+  .wave,.ship,.tw,.st,.flame,.eo,.zz,.mouth.talk,.pgrp.hop{animation:none}
 }
 
-body{
-    margin:0;
-    font-family:'Nunito',sans-serif;
-    background:
-        radial-gradient(circle at 20% 20%,rgba(255,255,255,.08) 1px,transparent 2px),
-        radial-gradient(circle at 80% 40%,rgba(255,255,255,.08) 1px,transparent 2px),
-        linear-gradient(180deg,#05091d,#101b3d);
-    color:white;
-    min-height:100vh;
-    overflow-x:hidden;
-}
-
-.screen{
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    padding:30px 20px;
-}
-
-.hidden{
-    display:none !important;
-}
-
-/* ---------------- START SCREEN ---------------- */
-
-.start-card{
-    width:min(900px,95%);
-    text-align:center;
-}
-
-.title{
-    font-size:clamp(38px,7vw,72px);
-    font-weight:800;
-    margin:0 0 10px;
-}
-
-.subtitle{
-    font-size:clamp(18px,3vw,27px);
-    opacity:.85;
-    margin-bottom:35px;
-}
-
-.astronaut{
-    width:min(280px,65vw);
-    margin:auto;
-    animation:float 3s ease-in-out infinite;
-}
-
-@keyframes float{
-    0%,100%{transform:translateY(0);}
-    50%{transform:translateY(-12px);}
-}
-
-.speech{
-    background:white;
-    color:#18203a;
-    padding:20px 25px;
-    border-radius:25px;
-    max-width:700px;
-    margin:20px auto;
-    font-size:clamp(17px,2.5vw,23px);
-    font-weight:700;
-    box-shadow:0 10px 30px rgba(0,0,0,.3);
-    position:relative;
-}
-
-.speech:after{
-    content:"";
-    position:absolute;
-    bottom:-15px;
-    left:50%;
-    transform:translateX(-50%);
-    border-left:15px solid transparent;
-    border-right:15px solid transparent;
-    border-top:15px solid white;
-}
-
-button{
-    border:0;
-    border-radius:50px;
-    padding:14px 28px;
-    font-family:inherit;
-    font-size:18px;
-    font-weight:800;
-    cursor:pointer;
-    background:#ffd84d;
-    color:#20233a;
-    transition:.2s;
-}
-
-button:hover{
-    transform:scale(1.05);
-}
-
-button:active{
-    transform:scale(.97);
-}
-
-/* ---------------- INPUT SCREEN ---------------- */
-
-.input-card{
-    width:min(650px,95%);
-    text-align:center;
-    background:rgba(255,255,255,.08);
-    padding:35px;
-    border-radius:30px;
-    backdrop-filter:blur(10px);
-}
-
-.input-card h2{
-    font-size:clamp(28px,5vw,44px);
-    margin-top:0;
-}
-
-input{
-    width:100%;
-    padding:15px 18px;
-    border-radius:15px;
-    border:2px solid rgba(255,255,255,.3);
-    background:rgba(0,0,0,.2);
-    color:white;
-    font-size:20px;
-    font-family:inherit;
-    margin:20px 0;
-    text-align:center;
-}
-
-input::placeholder{
-    color:rgba(255,255,255,.55);
-}
-
-.error{
-    color:#ff9e9e;
-    min-height:25px;
-    font-weight:700;
-}
-
-/* ---------------- RESULT SCREEN ---------------- */
-
-.result-screen{
-    justify-content:flex-start;
-    padding-top:30px;
-}
-
-.result-title{
-    text-align:center;
-    margin-bottom:10px;
-}
-
-.result-title h1{
-    font-size:clamp(32px,6vw,58px);
-    margin:0;
-}
-
-.result-title p{
-    font-size:18px;
-    opacity:.8;
-}
-
-.road-container{
-    width:min(1200px,96%);
-    overflow-x:auto;
-    background:rgba(255,255,255,.06);
-    border-radius:25px;
-    padding:25px 20px;
-}
-
-.road{
-    position:relative;
-    min-width:900px;
-    height:280px;
-    background:#333;
-    border-radius:20px;
-    border:5px solid #555;
-    overflow:hidden;
-}
-
-.road-line{
-    position:absolute;
-    left:0;
-    right:0;
-    top:50%;
-    height:5px;
-    transform:translateY(-50%);
-    background:repeating-linear-gradient(
-        90deg,
-        #fff 0 45px,
-        transparent 45px 80px
-    );
-    opacity:.8;
-}
-
-.planet{
-    position:absolute;
-    border-radius:50%;
-    transform:translate(-50%,-50%);
-    cursor:pointer;
-    transition:.25s;
-    box-shadow:0 0 20px rgba(255,255,255,.2);
-}
-
-.planet:hover{
-    transform:translate(-50%,-50%) scale(1.25);
-    box-shadow:0 0 30px rgba(255,255,255,.5);
-    z-index:10;
-}
-
-.sun-glow{
-    box-shadow:
-        0 0 20px #ffd34d,
-        0 0 50px rgba(255,190,40,.5);
-}
-
-.planet-label{
-    position:absolute;
-    transform:translateX(-50%);
-    top:calc(50% + 55px);
-    font-weight:800;
-    font-size:14px;
-    white-space:nowrap;
-}
-
-.scale-info{
-    margin-top:15px;
-    text-align:center;
-    opacity:.75;
-    font-size:15px;
-}
-
-.cards{
-    width:min(1200px,96%);
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:15px;
-    margin-top:25px;
-}
-
-.card{
-    background:rgba(255,255,255,.08);
-    border-radius:20px;
-    padding:20px;
-    cursor:pointer;
-    transition:.2s;
-    border:1px solid rgba(255,255,255,.08);
-}
-
-.card:hover{
-    transform:translateY(-5px);
-    background:rgba(255,255,255,.13);
-}
-
-.card h3{
-    margin:0 0 8px;
-    font-size:22px;
-}
-
-.card p{
-    margin:0;
-    opacity:.8;
-    line-height:1.5;
-}
-
-.info-bubble{
-    width:min(850px,94%);
-    margin:25px auto;
-    background:white;
-    color:#18203a;
-    border-radius:25px;
-    padding:22px 25px;
-    text-align:center;
-    font-size:20px;
-    font-weight:700;
-    box-shadow:0 10px 30px rgba(0,0,0,.3);
-    min-height:80px;
-}
-
-.fun{
-    text-align:center;
-    margin:15px auto;
-    max-width:850px;
-    font-size:18px;
-    opacity:.85;
-}
-
-.again{
-    margin:25px 0 40px;
-}
-
-/* responsive */
-
-@media(max-width:600px){
-
-    .road{
-        min-width:750px;
-        height:240px;
-    }
-
-    .cards{
-        grid-template-columns:1fr;
-    }
-
-    .speech{
-        padding:17px;
-    }
-
-}
 </style>
 </head>
-
 <body>
+<div class="sky" id="sky" aria-hidden="true">
+</div>
 
-<!-- ========================================================= -->
-<!-- START SCREEN -->
-<!-- ========================================================= -->
-
-<section id="start" class="screen">
-
-    <div class="start-card">
-
-        <h1 class="title">🌌 Solar System Scaling</h1>
-
-        <p class="subtitle">
-            Let's bring the Solar System down to Earth!
-        </p>
-
-        <!-- Astronaut -->
-        <svg class="astronaut" viewBox="0 0 300 300">
-
-            <!-- backpack -->
-            <rect x="55" y="110" width="45" height="95"
-                  rx="18" fill="#d8dbe5"/>
-
-            <!-- body -->
-            <rect x="85" y="105" width="130" height="135"
-                  rx="45" fill="#f2f3f7"/>
-
-            <!-- helmet -->
-            <circle cx="150" cy="80" r="60"
-                    fill="#f4f5f8"/>
-
-            <!-- visor -->
-            <ellipse cx="150" cy="80"
-                     rx="43" ry="32"
-                     fill="#202947"/>
-
-            <!-- reflection -->
-            <ellipse cx="137" cy="69"
-                     rx="17" ry="9"
-                     fill="rgba(255,255,255,.3)"/>
-
-            <!-- arms -->
-            <rect x="65" y="125" width="40" height="95"
-                  rx="20" fill="#e7e9ef"
-                  transform="rotate(18 65 125)"/>
-
-            <rect x="195" y="125" width="40" height="95"
-                  rx="20" fill="#e7e9ef"
-                  transform="rotate(-18 195 125)"/>
-
-            <!-- legs -->
-            <rect x="105" y="210" width="40" height="70"
-                  rx="20" fill="#e7e9ef"/>
-
-            <rect x="155" y="210" width="40" height="70"
-                  rx="20" fill="#e7e9ef"/>
-
-            <!-- chest -->
-            <rect x="120" y="135" width="60" height="45"
-                  rx="8" fill="#202947"/>
-
-            <circle cx="135" cy="150" r="6" fill="#5de2ff"/>
-            <circle cx="153" cy="150" r="6" fill="#ffdf5d"/>
-            <circle cx="171" cy="150" r="6" fill="#ff7777"/>
-
-        </svg>
-
-        <div class="speech">
-            <p id="hooktext">
-                Psst, explorers! I have something exciting to tell you.
-            </p>
-        </div>
-
-        <button id="hear">
-            🚀 Click here to listen to me
-        </button>
-
-        <br><br>
-
-        <button id="go">
-            🌍 Let's Scale the Solar System!
-        </button>
-
+<main>
+<section id="start" class="hero">
+  <svg class="art" id="astro" viewBox="0 0 360 250" role="img" aria-label="An astronaut waving from inside a spaceship window">
+    <circle class="tw" cx="26" cy="30" r="2.4" fill="#fff"/>
+    <circle class="tw" style="animation-delay:.7s" cx="120" cy="18" r="1.8" fill="#fff"/>
+    <circle class="tw" style="animation-delay:1.4s" cx="250" cy="26" r="2.2" fill="#ffcb2f"/>
+    <circle class="tw" style="animation-delay:.3s" cx="338" cy="40" r="2.4" fill="#fff"/>
+    <circle class="tw" style="animation-delay:1.1s" cx="340" cy="210" r="1.8" fill="#fff"/>
+    <circle class="tw" style="animation-delay:1.8s" cx="16" cy="190" r="1.8" fill="#fff"/>
+    <defs><clipPath id="pc"><circle cx="150" cy="130" r="40"/></clipPath></defs>
+    <g class="ship">
+      <path d="M92 88 L66 46 L134 88Z" fill="#ff7a59" stroke="#0004" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M92 172 L66 214 L134 172Z" fill="#ff7a59" stroke="#0004" stroke-width="3" stroke-linejoin="round"/>
+      <path class="flame" d="M64 112 Q20 130 64 148 Z" fill="#ffcb2f" stroke="#ff7a59" stroke-width="3"/>
+      <rect x="60" y="80" width="200" height="100" rx="48" fill="#f4f6ff" stroke="#0004" stroke-width="3"/>
+      <path d="M232 80 Q302 92 314 130 Q302 168 232 180Z" fill="#ff7a59" stroke="#0004" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="222" cy="130" r="13" fill="#5cc8ff" stroke="#0004" stroke-width="3"/>
+      <circle cx="150" cy="130" r="40" fill="#1b1456"/>
+      <g clip-path="url(#pc)">
+        <circle cx="128" cy="104" r="1.6" fill="#fff"/><circle cx="176" cy="108" r="1.4" fill="#ffcb2f"/>
+        <ellipse cx="150" cy="176" rx="36" ry="24" fill="#f4f6ff" stroke="#0004" stroke-width="3"/>
+        <g class="wave" style="transform-origin:176px 158px">
+          <rect x="170" y="120" width="13" height="40" rx="6.5" fill="#f4f6ff" stroke="#0004" stroke-width="3"/>
+          <circle cx="176.5" cy="118" r="8" fill="#ff7a59" stroke="#0004" stroke-width="3"/>
+        </g>
+        <circle cx="150" cy="128" r="26" fill="#f4f6ff" stroke="#0004" stroke-width="3"/>
+        <ellipse cx="150" cy="130" rx="19" ry="16" fill="#33279a" stroke="#0004" stroke-width="3"/>
+        <path d="M136 120 Q142 115 150 115" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="143" cy="128" r="4.4" fill="#fff"/><circle cx="157" cy="128" r="4.4" fill="#fff"/>
+        <circle cx="144" cy="129" r="2.2" fill="#1b1030"/><circle cx="158" cy="129" r="2.2" fill="#1b1030"/>
+        <g id="moa" class="mouth"><path d="M143 137 Q150 144 157 137" fill="none" stroke="#fff7e0" stroke-width="3" stroke-linecap="round"/></g>
+      </g>
+      <circle cx="150" cy="130" r="40" fill="none" stroke="#b9c2e6" stroke-width="7"/>
+      <circle cx="150" cy="130" r="40" fill="none" stroke="#0004" stroke-width="2"/>
+    </g>
+  </svg>
+  <div class="hook">
+    <p id="hooktext">Psst, kiddos! I have something exciting to tell you.</p>
+    <button class="ghost" id="hear" type="button">Click here to listen to me</button>
+  </div>
+  <h1>Scale your own Solar System</h1>
+  <p class="lead">Got a road, a corridor or a playground? Tell us how long it is, and we will show you where to place the Sun and every planet.</p>
+  <div class="ask">
+    <label for="len">How long is your road?</label>
+    <div class="row">
+      <input id="len" type="number" inputmode="decimal" min="20" max="5000" placeholder="400" aria-describedby="e">
+      <button class="go" id="go">Show me!</button>
     </div>
-
+    <p class="hint">Type the length in metres (at least 20 m).</p>
+    <div id="e" role="alert"></div>
+  </div>
 </section>
 
-
-<!-- ========================================================= -->
-<!-- INPUT SCREEN -->
-<!-- ========================================================= -->
-
-<section id="inputScreen" class="screen hidden">
-
-    <div class="input-card">
-
-        <h2>📏 Choose Your Road</h2>
-
-        <p>
-            Imagine that this road represents the distance
-            from the Sun to Neptune.
-        </p>
-
-        <p>
-            How long is your road?
-        </p>
-
-        <input
-            id="len"
-            type="number"
-            min="20"
-            max="5000"
-            placeholder="Enter length in metres"
-        >
-
-        <p class="error" id="error"></p>
-
-        <button id="vt">
-            ✨ Scale It!
-        </button>
-
-    </div>
-
+<section id="result" hidden>
+  <div class="top">
+    <h1 id="rt"></h1>
+    <button class="ghost" id="again">Try another road</button>
+  </div>
+  <div class="pic">
+    <div id="bubble" class="bubble" aria-live="polite">The planets are fast asleep. Tap a planet to wake it up!</div>
+    <div class="scroll"><svg id="svg" viewBox="0 0 1000 440" role="group" aria-label="Map of where each planet goes on your road"></svg></div>
+  </div>
+  <button class="ghost" id="vt" style="margin-bottom:8px">Voice: on</button>
+  <div class="legend">
+    <p class="hint">Swipe sideways if the picture is cut off.</p>
+  </div>
+  <div class="fun" id="fun"></div>
+  <h2>Your instructions</h2>
+  <p class="hint" style="margin:0 0 4px">Start at the beginning of your road. Measure every distance from there.</p>
+  <div class="cards" id="cards"></div>
+  <p class="hint">Data: NASA/JPL, Solar System Sizes and Distances.</p>
 </section>
-
-
-<!-- ========================================================= -->
-<!-- RESULT SCREEN -->
-<!-- ========================================================= -->
-
-<section id="result" class="screen result-screen hidden">
-
-    <div class="result-title">
-
-        <h1>🌌 Your Scaled Solar System</h1>
-
-        <p>
-            Click on a planet to meet it!
-        </p>
-
-    </div>
-
-
-    <div class="road-container">
-
-        <div id="road" class="road">
-
-            <div class="road-line"></div>
-
-        </div>
-
-        <div class="scale-info" id="scaleInfo"></div>
-
-    </div>
-
-
-    <div id="bubble" class="info-bubble">
-        👆 Click a planet to hear an interesting fact!
-    </div>
-
-
-    <div id="cards" class="cards"></div>
-
-
-    <p class="fun">
-        🌟 Look carefully! The Solar System is much bigger than
-        the little picture we usually see in textbooks.
-    </p>
-
-
-    <button id="again" class="again">
-        🔄 Try Another Road Length
-    </button>
-
-</section>
-
+</main>
 
 <script>
+/* The recorded voices were left out to keep this file small, so the page uses the browser's own voice. */
+const AUDIO={};
 
-/* ============================================================
-   PLANET DATA
-   ============================================================ */
+const P=[["Sun",0,695700,"#ffcb2f",46],["Mercury",.39,2439.5,"#b3a9a0",20],["Venus",.72,6052,"#f0b96b",26],["Earth",1,6378,"#3d8bff",27],["Mars",1.52,3396,"#ff6b5c",23],["Jupiter",5.2,71492,"#e8a14a",36],["Saturn",9.54,60268,"#e6cf86",32],["Uranus",19.2,25559,"#74d7e0",29],["Neptune",30.06,24764,"#5a6cff",29]];
 
-/*
-   Name
-   Distance from Sun in AU
-   Radius in km
-   Colour
-   Display size
-*/
-
-const P = [
-
-    [
-        "Sun",
-        0,
-        695700,
-        "#ffcb2f",
-        46
-    ],
-
-    [
-        "Mercury",
-        0.39,
-        2439.5,
-        "#b3a9a0",
-        20
-    ],
-
-    [
-        "Venus",
-        0.72,
-        6052,
-        "#f0b96b",
-        26
-    ],
-
-    [
-        "Earth",
-        1,
-        6378,
-        "#3d8bff",
-        27
-    ],
-
-    [
-        "Mars",
-        1.52,
-        3396,
-        "#ff6b5c",
-        23
-    ],
-
-    [
-        "Jupiter",
-        5.2,
-        71492,
-        "#e8a14a",
-        36
-    ],
-
-    [
-        "Saturn",
-        9.54,
-        60268,
-        "#e6cf86",
-        32
-    ],
-
-    [
-        "Uranus",
-        19.2,
-        25559,
-        "#74d7e0",
-        29
-    ],
-
-    [
-        "Neptune",
-        30.06,
-        24764,
-        "#5a6cff",
-        29
-    ]
-
+const C=[
+"Hey, I’m the Sun! I’m actually a star, and I’m about 100 times wider than Earth. My gravity keeps the whole Solar System together.",
+"Hey, I’m Mercury! I’m the smallest planet, and I zoom around the Sun so quickly that one year here lasts only 88 Earth days!",
+"Hey, I’m Venus! I’m the hottest planet in the Solar System—even though Mercury is closer to the Sun!",
+"Hey, I’m Earth! I’m our home—and so far, I’m the only place where we’ve found life!",
+"Hey, I’m Mars, the Red Planet! My rusty-looking rocks give me my red color, and I’m home to Olympus Mons, the largest volcano in the Solar System!",
+"Hey, I’m Jupiter! I’m the biggest planet in the Solar System—and I have the shortest day. I spin once in only about 10 hours!",
+"Hey, I’m Saturn! You know me for my beautiful rings, but did you know they’re made mostly of ice and rock?",
+"Hey, I’m Uranus! I’m tilted so much that I basically spin on my side as I travel around the Sun!",
+"Hey, I’m Neptune! I’m the farthest planet from the Sun, and I have some of the fastest winds in the Solar System!"
 ];
 
+const $=id=>document.getElementById(id);
 
-/* ============================================================
-   PLANET FACTS
-   ============================================================ */
+/* ---- Stars drifting in the background ---- */
+(function(){
+  const sky=$("sky"),R=(a,b)=>a+Math.random()*(b-a);
+  for(let i=0;i<46;i++){
+    const s=document.createElement("span"),z=R(2,4.2);
+    s.className="st";
+    s.style.cssText=`left:${R(0,100)}%;top:${R(0,100)}%;width:${z}px;height:${z}px;--tw:${R(2,5)}s;--dr:${R(8,18)}s;--dl:${-R(0,8)}s;--dx:${R(-40,40)}px;--dy:${R(-30,30)}px`;
+    if(i%7===0)s.style.background="#ffcb2f";
+    sky.appendChild(s);
+  }
+})();
 
-const C = [
-
-    "Hey, I'm the Sun! I'm actually a star, and I'm about 100 times wider than Earth. My gravity keeps the whole Solar System together!",
-
-    "Hey, I'm Mercury! I'm the smallest planet, and I zoom around the Sun so quickly that one year here lasts only 88 Earth days!",
-
-    "Hey, I'm Venus! I'm the hottest planet in the Solar System—even though Mercury is closer to the Sun!",
-
-    "Hey, I'm Earth! I'm our home—and so far, I'm the only place where we've found life!",
-
-    "Hey, I'm Mars, the Red Planet! My rusty-looking rocks give me my red color, and I'm home to Olympus Mons, the largest volcano in the Solar System!",
-
-    "Hey, I'm Jupiter! I'm the biggest planet in the Solar System—and I have the shortest day. I spin once in only about 10 hours!",
-
-    "Hey, I'm Saturn! You know me for my beautiful rings, but did you know they're made mostly of ice and rock?",
-
-    "Hey, I'm Uranus! I'm tilted so much that I basically spin on my side as I travel around the Sun!",
-
-    "Hey, I'm Neptune! I'm the farthest planet from the Sun, and I have some of the fastest winds in the Solar System!"
-
-];
-
-
-/* ============================================================
-   ASTRONAUT OPENING
-   ============================================================ */
-
-const HOOK =
-"Hey, explorers! Have you ever wondered how far the Sun is from Earth? Or how tiny Mercury is compared to Earth? Or how enormous Jupiter is? We know these things, but it can be really hard to imagine them because the Solar System is HUGE! So, how can we bring something this huge down to a size we can actually see and understand? That's where scaling comes in! Scaling means making something bigger or smaller while keeping the same proportions. And today, we're going to scale down the Solar System and bring it right onto your road!";
-
-
-/* ============================================================
-   ELEMENTS
-   ============================================================ */
-
-const start = document.getElementById("start");
-
-const inputScreen =
-    document.getElementById("inputScreen");
-
-const result =
-    document.getElementById("result");
-
-const hear =
-    document.getElementById("hear");
-
-const go =
-    document.getElementById("go");
-
-const vt =
-    document.getElementById("vt");
-
-const len =
-    document.getElementById("len");
-
-const error =
-    document.getElementById("error");
-
-const road =
-    document.getElementById("road");
-
-const cards =
-    document.getElementById("cards");
-
-const bubble =
-    document.getElementById("bubble");
-
-const scaleInfo =
-    document.getElementById("scaleInfo");
-
-const again =
-    document.getElementById("again");
-
-const hooktext =
-    document.getElementById("hooktext");
-
-
-/* ============================================================
-   SPEECH
-   ============================================================ */
-
-function say(text){
-
-    if(
-        "speechSynthesis" in window
-    ){
-
-        speechSynthesis.cancel();
-
-        const speech =
-            new SpeechSynthesisUtterance(text);
-
-        speech.rate = 0.95;
-        speech.pitch = 1.05;
-
-        speechSynthesis.speak(speech);
-
-    }
-
+/* ---- Voice: bright, slow and friendly ---- */
+let voiceOn=true,talkId=0;
+const VP=[[1.15,.88],[2,1.12],[1.9,1],[1.7,1],[1.5,1.02],[1.1,.85],[1.3,.9],[1.8,1],[1.6,.95]];
+const NOVELTY=/Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Wobble|Good News|Jester|Organ|Superstar|Trinoids|Whisper|Zarvox|Albert|Fred|Junior|Ralph|Kathy/i;
+const KIDLY=/Samantha|Karen|Moira|Tessa|Veena|Serena|Fiona|Zira|Hazel|Susan|Heera|Google UK English Female|Google US English|Female/i;
+function pickVoice(i){
+  const all=speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang)&&!NOVELTY.test(v.name));
+  const kid=all.filter(v=>KIDLY.test(v.name));
+  const nat=all.filter(v=>/Natural|Neural|Enhanced|Premium|Online/i.test(v.name));
+  const pool=nat.length?nat:(kid.length?kid:all);
+  return pool.length?pool[(+i||0)%pool.length]:null;
+}
+function mouth(i,on){const m=$("mo"+i);if(m)m.classList.toggle("talk",on);}
+/* Recorded clips play through the Web Audio API (more reliable than an audio tag inside a shared page). */
+let actx=null,curSrc=null,curIdx=null;const BUF={};
+function stopAudio(){
+  if(curSrc){try{curSrc.onended=null;curSrc.stop();}catch(e){}curSrc=null;}
+  if(curIdx!==null){mouth(curIdx,false);curIdx=null;}
+}
+function getBuf(k){
+  if(BUF[k])return Promise.resolve(BUF[k]);
+  const bin=atob(AUDIO[k].split(",")[1]),u=new Uint8Array(bin.length);
+  for(let j=0;j<bin.length;j++)u[j]=bin.charCodeAt(j);
+  return new Promise((ok,no)=>{const r=actx.decodeAudioData(u.buffer,b=>{BUF[k]=b;ok(b);},no);if(r&&r.then)r.then(b=>{BUF[k]=b;ok(b);},no);});
+}
+function say(t,i){
+  if(!voiceOn)return;
+  const k=String(i);
+  if(!AUDIO[k]){speakBrowser(t,i);return;}
+  try{if("speechSynthesis" in window)speechSynthesis.cancel();}catch(e){}
+  stopAudio();
+  const my=++talkId;
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    if(actx.state==="suspended")actx.resume();
+  }catch(e){speakBrowser(t,i,my);return;}
+  getBuf(k).then(b=>{
+    if(my!==talkId)return;
+    const src=actx.createBufferSource();
+    src.buffer=b;src.connect(actx.destination);
+    curSrc=src;curIdx=i;
+    src.onended=()=>{if(my===talkId){mouth(i,false);curIdx=null;}};
+    mouth(i,true);src.start();
+  }).catch(()=>{if(my===talkId)speakBrowser(t,i,my);});
+}
+function speakBrowser(t,i,fixedMy){
+  if(!("speechSynthesis" in window))return;
+  try{
+    speechSynthesis.cancel();
+    const my=fixedMy||++talkId,p=VP[i]||[1.3,.92],v=pickVoice(i);
+    // One sentence at a time, so the voice takes natural little pauses.
+    const parts=t.match(/[^.!?]+[.!?]+/g)||[t];
+    parts.forEach((sent,k)=>{
+      const u=new SpeechSynthesisUtterance(sent.trim());
+      u.pitch=p[0];u.rate=p[1];u.lang="en-GB";
+      if(v){u.voice=v;u.lang=v.lang;}
+      if(k===0)u.onstart=()=>{if(my===talkId)mouth(i,true);};
+      u.onend=u.onerror=()=>{if(my===talkId&&k===parts.length-1)mouth(i,false);};
+      speechSynthesis.speak(u);
+    });
+  }catch(e){}
+}
+function fmt(m){
+  if(m>=1)return m.toFixed(2)+" m";
+  if(m>=.01)return (m*100).toFixed(2)+" cm";
+  return (m*1000).toFixed(1)+" mm";
 }
 
-
-/* ============================================================
-   ASTRONAUT BUTTON
-   ============================================================ */
-
-hear.addEventListener(
-    "click",
-    function(){
-
-        hooktext.textContent = HOOK;
-
-        say(HOOK);
-
-    }
-);
-
-
-/* ============================================================
-   GO TO INPUT
-   ============================================================ */
-
-go.addEventListener(
-    "click",
-    function(){
-
-        start.classList.add("hidden");
-
-        inputScreen.classList.remove("hidden");
-
-        len.focus();
-
-    }
-);
-
-
-/* ============================================================
-   CALCULATION
-   ============================================================ */
-
+/* ---- A planet with a sleepy face (eyes closed) and an awake face (eyes open) ---- */
+function face(cx,cy,r,c,name,i){
+  const lw=Math.max(2,r*.09);
+  let s=`<g id="pg${i}" class="pgrp">`;
+  if(name==="Sun")s+=`<circle cx="${cx}" cy="${cy}" r="${r+12}" fill="${c}" opacity=".25"/>`;
+  s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}" stroke="#0007" stroke-width="3"/>`;
+  if(name==="Saturn")s+=`<ellipse cx="${cx}" cy="${cy}" rx="${r*1.75}" ry="${r*.42}" fill="none" stroke="#f4e6b0" stroke-width="${r*.14}" transform="rotate(-14 ${cx} ${cy})"/>`;
+  // closed eyes: two little downward curves
+  s+=`<g id="ec${i}"><path d="M${cx-r*.5} ${cy-r*.12} Q${cx-r*.33} ${cy+r*.12} ${cx-r*.16} ${cy-r*.12}" fill="none" stroke="#1b1030" stroke-width="${lw}" stroke-linecap="round"/><path d="M${cx+r*.16} ${cy-r*.12} Q${cx+r*.33} ${cy+r*.12} ${cx+r*.5} ${cy-r*.12}" fill="none" stroke="#1b1030" stroke-width="${lw}" stroke-linecap="round"/></g>`;
+  // open eyes (hidden until the planet is tapped)
+  s+=`<g id="eo${i}" class="eo" display="none"><circle cx="${cx-r*.33}" cy="${cy-r*.15}" r="${r*.22}" fill="#fff"/><circle cx="${cx+r*.33}" cy="${cy-r*.15}" r="${r*.22}" fill="#fff"/><circle cx="${cx-r*.29}" cy="${cy-r*.1}" r="${r*.11}" fill="#1b1030"/><circle cx="${cx+r*.37}" cy="${cy-r*.1}" r="${r*.11}" fill="#1b1030"/></g>`;
+  s+=`<g id="mo${i}" class="mouth"><path d="M${cx-r*.36} ${cy+r*.25} Q${cx} ${cy+r*.75} ${cx+r*.36} ${cy+r*.25}" fill="none" stroke="#1b1030" stroke-width="${lw}" stroke-linecap="round"/></g>`;
+  s+=`<text id="zz${i}" class="zz" x="${cx+r*.62}" y="${cy-r*.62}" font-size="${Math.max(14,r*.55)}" fill="#fff7e0">z</text>`;
+  s+=`</g>`;
+  return s;
+}
 function calc(D){
-
-    /*
-       D = total road length
-
-       Neptune = D
-
-       We also leave a small amount of space
-       at the beginning so that the Sun is visible.
-    */
-
-    const S = P[0][2];
-
-    const kN =
-        P[8][2] / S;
-
-    const R =
-        0.01175 * D;
-
-    const au =
-        (D - R * (1 + kN)) / 30.06;
-
-    const k =
-        R / S;
-
-    return P.map(
-        function(p){
-
-            return {
-
-                name:p[0],
-
-                x:
-                    R + p[1] * au,
-
-                r:
-                    p[2] * k,
-
-                colour:p[3],
-
-                display:p[4]
-
-            };
-
-        }
-    );
-
+  const S=P[0][2],kN=P[8][2]/S;
+  const R=0.01175*D;               /* Sun radius in the model (m), rounded to 4 significant figures */
+  const au=(D-R*(1+kN))/30.06,k=R/S; /* 1 AU in metres, and 1 km (real) = k m (model) */
+  return{R,au,rows:P.map(p=>({n:p[0],x:R+p[1]*au,r:p[2]*k,c:p[3],d:p[4]}))};
+}
+function show(){
+  stopAudio();if("speechSynthesis" in window)speechSynthesis.cancel();
+  const D=parseFloat($("len").value);
+  if(!(D>=20)){$("e").innerHTML='<div class="err">Please type a road length of at least 20 metres.</div>';return;}
+  if(D>5000){$("e").innerHTML='<div class="err">That is a very long road! Try 5,000 metres or less.</div>';return;}
+  $("e").innerHTML="";
+  const {R,au,rows}=calc(D);
+  const Dtxt=(Math.round(D*100)/100).toString();
+  $("rt").textContent="Your Solar System on a "+Dtxt+" m road";
+  const x0=40,w=920,roadY=330;
+  let s=`<rect x="${x0}" y="${roadY}" width="${w}" height="56" rx="10" fill="#3a3f5c"/>`;
+  s+=`<line x1="${x0+8}" y1="${roadY+28}" x2="${x0+w-8}" y2="${roadY+28}" stroke="#ffcb2f" stroke-width="4" stroke-dasharray="22 16"/>`;
+  s+=`<text x="${x0}" y="${roadY+80}" fill="#fff7e0" font-size="22" font-weight="800" font-family="Nunito,sans-serif">Start (0 m)</text>`;
+  s+=`<text x="${x0+w}" y="${roadY+80}" text-anchor="end" fill="#fff7e0" font-size="22" font-weight="800" font-family="Nunito,sans-serif">End (${Dtxt} m)</text>`;
+  rows.forEach((p,i)=>{
+    const sx=60+i*110,px=x0+p.x/D*w;
+    s+=`<line x1="${sx}" y1="212" x2="${px}" y2="${roadY+28}" stroke="${p.c}" stroke-width="3" stroke-dasharray="7 6" opacity=".9"/>`;
+    s+=`<circle cx="${px}" cy="${roadY+28}" r="${Math.max(p.r/D*w,1.6)}" fill="${p.c}" stroke="#fff" stroke-width="${i===0?1.2:.7}"/>`;
+    s+=`<circle id="hl${i}" cx="${sx}" cy="110" r="${p.d+14}" fill="none" stroke="#fff" stroke-width="4" opacity="0"/>`;
+    s+=face(sx,110,p.d,p.c,p.n,i);
+    s+=`<text x="${sx}" y="182" text-anchor="middle" fill="#fff7e0" font-size="21" font-weight="800" font-family='Baloo 2,Nunito,sans-serif'>${p.n}</text>`;
+    s+=`<text x="${sx}" y="204" text-anchor="middle" fill="#c9c3f0" font-size="17" font-family="Nunito,sans-serif">${p.x.toFixed(2)} m</text>`;
+    const hy=110-p.d-16;
+    s+=`<rect class="pl" data-i="${i}" tabindex="0" role="button" aria-label="Wake up ${p.n}" x="${sx-52}" y="${hy}" width="104" height="${214-hy}" rx="18" fill="transparent"/>`;
+  });
+  $("svg").innerHTML=s;
+  $("bubble").textContent="The planets are fast asleep. Tap a planet to wake it up!";
+  $("bubble").style.borderColor="";
+  // Only the tapped planet is awake; everyone else sleeps with eyes closed.
+  const wake=i=>{
+    rows.forEach((_,j)=>{
+      const awake=j===i;
+      $("eo"+j).setAttribute("display",awake?"inline":"none");
+      $("ec"+j).setAttribute("display",awake?"none":"inline");
+      $("zz"+j).setAttribute("display",awake?"none":"inline");
+      $("hl"+j).setAttribute("opacity",awake?1:0);
+      if(!awake)mouth(j,false);
+    });
+    const g=$("pg"+i);g.classList.remove("hop");g.getBoundingClientRect();g.classList.add("hop");
+  };
+  const pick=i=>{
+    wake(i);
+    $("bubble").style.borderColor=rows[i].c;
+    $("bubble").textContent=C[i];
+    say(C[i],i);
+  };
+  $("svg").querySelectorAll(".pl").forEach(el=>{
+    const i=+el.getAttribute("data-i");
+    el.onclick=()=>pick(i);
+    el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pick(i);}};
+  });
+  $("cards").innerHTML=rows.map((p,i)=>{
+    let t;
+    if(i===0)t=`Its <em>centre</em> goes ${p.x.toFixed(2)} m from the start, so its left edge touches the start of the road. Draw a circle of radius <em>${fmt(p.r)}</em>. The Sun is big!`;
+    else t=`Walk <em>${p.x.toFixed(2)} m</em> from the start and place ${p.n} here. Draw a circle of radius <em>${fmt(p.r)}</em>.`;
+    if(i===8)t+=` Its edge reaches the end of your road.`;
+    return `<div class="card"><div class="bw"><div class="ball" style="background:${p.c};width:${p.d*1.7}px;height:${p.d*1.7}px"></div></div><div><b>${p.n}</b><p>${t}</p></div></div>`;
+  }).join("");
+  $("fun").textContent="On your road, the Earth is only "+fmt(2*rows[3].r)+" wide, and the Earth–Sun distance is "+fmt(au)+". A ₹1 coin is about 2.5 cm across!";
+  $("start").hidden=true;$("result").hidden=false;window.scrollTo(0,0);
 }
 
-
-/* ============================================================
-   CREATE PLANET
-   ============================================================ */
-
-function makePlanet(item,index){
-
-    const planet =
-        document.createElement("div");
-
-    planet.className =
-        "planet";
-
-    planet.style.left =
-        item.x + "px";
-
-    planet.style.top =
-        "50%";
-
-    /*
-       Actual scaled radius may be extremely small.
-
-       Therefore we use a minimum visible size
-       for the webpage.
-    */
-
-    const visibleSize =
-        Math.max(
-            item.display,
-            Math.min(item.r * 2, item.display * 1.5)
-        );
-
-    planet.style.width =
-        visibleSize + "px";
-
-    planet.style.height =
-        visibleSize + "px";
-
-    planet.style.background =
-        item.colour;
-
-    if(index === 0){
-
-        planet.classList.add(
-            "sun-glow"
-        );
-
-    }
-
-    planet.title =
-        item.name;
-
-    planet.addEventListener(
-        "click",
-        function(){
-
-            pick(index);
-
-        }
-    );
-
-    return planet;
-
-}
-
-
-/* ============================================================
-   SHOW RESULT
-   ============================================================ */
-
-function show(D){
-
-    const rows =
-        calc(D);
-
-    /*
-       Clear previous result
-    */
-
-    road.innerHTML =
-        '<div class="road-line"></div>';
-
-    cards.innerHTML = "";
-
-
-    /*
-       Road width on screen
-
-       We use a visual representation where
-       the complete road corresponds to D metres.
-    */
-
-    const roadWidth =
-        900;
-
-    road.style.width =
-        roadWidth + "px";
-
-
-    /*
-       Convert real scaled position
-       into visual road position.
-    */
-
-    rows.forEach(
-        function(item,index){
-
-            const visualX =
-                (item.x / D) *
-                roadWidth;
-
-            item.visualX =
-                visualX;
-
-            const planet =
-                makePlanet(
-                    {
-                        ...item,
-                        x:visualX
-                    },
-                    index
-                );
-
-            road.appendChild(
-                planet
-            );
-
-
-            /*
-               Planet label
-            */
-
-            const label =
-                document.createElement("div");
-
-            label.className =
-                "planet-label";
-
-            label.textContent =
-                item.name;
-
-            label.style.left =
-                visualX + "px";
-
-            road.appendChild(
-                label
-            );
-
-
-            /*
-               Information card
-            */
-
-            const card =
-                document.createElement("div");
-
-            card.className =
-                "card";
-
-            card.innerHTML = `
-                <h3>${item.name}</h3>
-                <p>${C[index]}</p>
-            `;
-
-            card.addEventListener(
-                "click",
-                function(){
-
-                    pick(index);
-
-                }
-            );
-
-            cards.appendChild(
-                card
-            );
-
-        }
-    );
-
-
-    scaleInfo.textContent =
-        "Your road = " +
-        D +
-        " metres from the Sun to Neptune.";
-
-
-    inputScreen.classList.add(
-        "hidden"
-    );
-
-    result.classList.remove(
-        "hidden"
-    );
-
-}
-
-
-/* ============================================================
-   PLANET SELECTION
-   ============================================================ */
-
-function pick(index){
-
-    const text =
-        C[index];
-
-    bubble.textContent =
-        text;
-
-    say(text);
-
-}
-
-
-/* ============================================================
-   START SCALING
-   ============================================================ */
-
-vt.addEventListener(
-    "click",
-    function(){
-
-        const D =
-            Number(len.value);
-
-        if(
-            !D ||
-            D < 20 ||
-            D > 5000
-        ){
-
-            error.textContent =
-                "Please enter a road length between 20 and 5000 metres.";
-
-            return;
-
-        }
-
-        error.textContent =
-            "";
-
-        show(D);
-
-    }
-);
-
-
-/* ============================================================
-   ENTER KEY
-   ============================================================ */
-
-len.addEventListener(
-    "keydown",
-    function(e){
-
-        if(
-            e.key === "Enter"
-        ){
-
-            vt.click();
-
-        }
-
-    }
-);
-
-
-/* ============================================================
-   TRY AGAIN
-   ============================================================ */
-
-again.addEventListener(
-    "click",
-    function(){
-
-        result.classList.add(
-            "hidden"
-        );
-
-        inputScreen.classList.remove(
-            "hidden"
-        );
-
-        len.value =
-            "";
-
-        bubble.textContent =
-            "👆 Click a planet to hear an interesting fact!";
-
-        len.focus();
-
-    }
-);
+$("go").onclick=show;
+
+const HOOK="Hey, explorers! Have you ever wondered how far the Sun is from Earth? Or how tiny Mercury is compared to Earth? Or how enormous Jupiter is? We know these things, but it can be really hard to imagine them because the Solar System is HUGE! So, how can we bring something this huge down to a size we can actually see and understand? That's where scaling comes in! Scaling means making something bigger or smaller while keeping the same proportions. And today, we're going to scale down the Solar System and bring it right onto your road!";
+
+const hear=()=>{$("hooktext").textContent=HOOK;$("hear").textContent="Listen again";say(HOOK,"a");};
+$("hear").onclick=hear;
+$("astro").onclick=hear;
+$("vt").onclick=()=>{voiceOn=!voiceOn;$("vt").textContent="Voice: "+(voiceOn?"on":"off");if(!voiceOn){stopAudio();if("speechSynthesis" in window)speechSynthesis.cancel();document.querySelectorAll(".mouth").forEach(m=>m.classList.remove("talk"));}};
+$("len").onkeydown=e=>{if(e.key==="Enter")show();};
+$("again").onclick=()=>{stopAudio();if("speechSynthesis" in window)speechSynthesis.cancel();$("result").hidden=true;$("start").hidden=false;$("len").focus();};
 
 </script>
-
 </body>
 </html>
