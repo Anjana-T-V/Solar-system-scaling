@@ -8,7 +8,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;700;800&display=swap');
 
 /* Layout concept: one dark night-sky page. An astronaut waves from inside a spaceship window and asks the hook question, stars drift behind everything, and sleepy planets wake up when tapped. */
-:root{--space:#14104a;--space2:#2a1a6e;--ink:#fff7e0;--muted:#c9c3f0;--sun:#ffcb2f;--coral:#ff7a59;--sky:#5cc8ff;--card:#241a64;--line:#4b3f9c;--road:#3a3f5c;color-scheme:dark}
+:root{--space:#020208;--space2:#05050d;--ink:#fff7e0;--muted:#c9c3f0;--sun:#ffcb2f;--coral:#ff7a59;--sky:#5cc8ff;--card:#241a64;--line:#4b3f9c;--road:#3a3f5c;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:border-box}
 body{margin:0;color:var(--ink);font-family:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5;min-height:100vh;
@@ -139,12 +139,12 @@ button.ghost{font:inherit;font-weight:800;padding:10px 18px;border-radius:999px;
 
     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="ghost" id="pauseVoice" type="button">Pause voice</button>
-      <button class="ghost" id="stopVoice" type="button">Stop voice</button>
     </div>
   </div>
 
   <h1>Scale your own Solar System</h1>
   <p class="lead">Got a road, a corridor or a playground? Tell us how long it is, and we will show you where to place the Sun and every planet.</p>
+
   <div class="ask">
     <label for="len">How long is your road?</label>
     <div class="row">
@@ -161,15 +161,20 @@ button.ghost{font:inherit;font-weight:800;padding:10px 18px;border-radius:999px;
     <h1 id="rt"></h1>
     <button class="ghost" id="again">Try another road</button>
   </div>
+
   <div class="pic">
     <div id="bubble" class="bubble" aria-live="polite">The planets are fast asleep. Tap a planet to wake it up!</div>
     <div class="scroll"><svg id="svg" viewBox="0 0 1000 440" role="group" aria-label="Map of where each planet goes on your road"></svg></div>
   </div>
+
   <button class="ghost" id="vt" style="margin-bottom:8px">Voice: on</button>
+
   <div class="legend">
     <p class="hint">Swipe sideways if the picture is cut off.</p>
   </div>
+
   <div class="fun" id="fun"></div>
+
   <h2>Your instructions</h2>
   <p class="hint" style="margin:0 0 4px">Start at the beginning of your road. Measure every distance from there.</p>
   <div class="cards" id="cards"></div>
@@ -181,7 +186,17 @@ button.ghost{font:inherit;font-weight:800;padding:10px 18px;border-radius:999px;
 /* The recorded voices were left out to keep this file small, so the page uses the browser's own voice. */
 const AUDIO={};
 
-const P=[["Sun",0,695700,"#ffcb2f",46],["Mercury",.39,2439.5,"#b3a9a0",20],["Venus",.72,6052,"#f0b96b",26],["Earth",1,6378,"#3d8bff",27],["Mars",1.52,3396,"#ff6b5c",23],["Jupiter",5.2,71492,"#e8a14a",36],["Saturn",9.54,60268,"#e6cf86",32],["Uranus",19.2,25559,"#74d7e0",29],["Neptune",30.06,24764,"#5a6cff",29]];
+const P=[
+["Sun",0,695700,"#ffcb2f",46],
+["Mercury",.39,2439.5,"#b3a9a0",20],
+["Venus",.72,6052,"#f0b96b",26],
+["Earth",1,6378,"#3d8bff",27],
+["Mars",1.52,3396,"#ff6b5c",23],
+["Jupiter",5.2,71492,"#e8a14a",36],
+["Saturn",9.54,60268,"#e6cf86",32],
+["Uranus",19.2,25559,"#74d7e0",29],
+["Neptune",30.06,24764,"#5a6cff",29]
+];
 
 const C=[
 "Hey, I’m the Sun! I’m actually a star, and I’m about 100 times wider than Earth. My gravity keeps the whole Solar System together.",
@@ -211,7 +226,18 @@ const $=id=>document.getElementById(id);
 
 /* ---- Voice: bright, slow and friendly ---- */
 let voiceOn=true,talkId=0;
-const VP=[[1.15,.88],[2,1.12],[1.9,1],[1.7,1],[1.5,1.02],[1.1,.85],[1.3,.9],[1.8,1],[1.6,.95]];
+const VP=[
+[1.15,.88],
+[2,1.12],
+[1.9,1],
+[1.7,1],
+[1.5,1.02],
+[1.1,.85],
+[1.3,.9],
+[1.8,1],
+[1.6,.95]
+];
+
 const NOVELTY=/Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Wobble|Good News|Jester|Organ|Superstar|Trinoids|Whisper|Zarvox|Albert|Fred|Junior|Ralph|Kathy/i;
 const KIDLY=/Samantha|Karen|Moira|Tessa|Veena|Serena|Fiona|Zira|Hazel|Susan|Heera|Google UK English Female|Google US English|Female/i;
 
@@ -223,59 +249,141 @@ function pickVoice(i){
   return pool.length?pool[(+i||0)%pool.length]:null;
 }
 
-function mouth(i,on){const m=$("mo"+i);if(m)m.classList.toggle("talk",on);}
+function mouth(i,on){
+  const m=$("mo"+i);
+  if(m)m.classList.toggle("talk",on);
+}
 
-/* Recorded clips play through the Web Audio API (more reliable than an audio tag inside a shared page). */
-let actx=null,curSrc=null,curIdx=null;const BUF={};
+let actx=null,curSrc=null,curIdx=null;
+const BUF={};
 
 function stopAudio(){
-  if(curSrc){try{curSrc.onended=null;curSrc.stop();}catch(e){}curSrc=null;}
-  if(curIdx!==null){mouth(curIdx,false);curIdx=null;}
+  if(curSrc){
+    try{
+      curSrc.onended=null;
+      curSrc.stop();
+    }catch(e){}
+    curSrc=null;
+  }
+
+  if(curIdx!==null){
+    mouth(curIdx,false);
+    curIdx=null;
+  }
 }
 
 function getBuf(k){
   if(BUF[k])return Promise.resolve(BUF[k]);
+
   const bin=atob(AUDIO[k].split(",")[1]),u=new Uint8Array(bin.length);
+
   for(let j=0;j<bin.length;j++)u[j]=bin.charCodeAt(j);
-  return new Promise((ok,no)=>{const r=actx.decodeAudioData(u.buffer,b=>{BUF[k]=b;ok(b);},no);if(r&&r.then)r.then(b=>{BUF[k]=b;ok(b);},no);});
+
+  return new Promise((ok,no)=>{
+    const r=actx.decodeAudioData(
+      u.buffer,
+      b=>{
+        BUF[k]=b;
+        ok(b);
+      },
+      no
+    );
+
+    if(r&&r.then)r.then(b=>{
+      BUF[k]=b;
+      ok(b);
+    },no);
+  });
 }
 
 function say(t,i){
   if(!voiceOn)return;
+
   const k=String(i);
-  if(!AUDIO[k]){speakBrowser(t,i);return;}
-  try{if("speechSynthesis" in window)speechSynthesis.cancel();}catch(e){}
+
+  if(!AUDIO[k]){
+    speakBrowser(t,i);
+    return;
+  }
+
+  try{
+    if("speechSynthesis" in window)speechSynthesis.cancel();
+  }catch(e){}
+
   stopAudio();
+
   const my=++talkId;
+
   try{
     actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+
     if(actx.state==="suspended")actx.resume();
-  }catch(e){speakBrowser(t,i,my);return;}
+
+  }catch(e){
+    speakBrowser(t,i,my);
+    return;
+  }
+
   getBuf(k).then(b=>{
     if(my!==talkId)return;
+
     const src=actx.createBufferSource();
-    src.buffer=b;src.connect(actx.destination);
-    curSrc=src;curIdx=i;
-    src.onended=()=>{if(my===talkId){mouth(i,false);curIdx=null;}};
-    mouth(i,true);src.start();
-  }).catch(()=>{if(my===talkId)speakBrowser(t,i,my);});
+    src.buffer=b;
+    src.connect(actx.destination);
+
+    curSrc=src;
+    curIdx=i;
+
+    src.onended=()=>{
+      if(my===talkId){
+        mouth(i,false);
+        curIdx=null;
+      }
+    };
+
+    mouth(i,true);
+    src.start();
+
+  }).catch(()=>{
+    if(my===talkId)speakBrowser(t,i,my);
+  });
 }
 
 function speakBrowser(t,i,fixedMy){
   if(!("speechSynthesis" in window))return;
+
   try{
     speechSynthesis.cancel();
-    const my=fixedMy||++talkId,p=VP[i]||[1.3,.92],v=pickVoice(i);
+
+    const my=fixedMy||++talkId;
+    const p=VP[i]||[1.3,.92];
+    const v=pickVoice(i);
+
     const parts=t.match(/[^.!?]+[.!?]+/g)||[t];
 
     parts.forEach((sent,k)=>{
       const u=new SpeechSynthesisUtterance(sent.trim());
-      u.pitch=p[0];u.rate=p[1];u.lang="en-GB";
-      if(v){u.voice=v;u.lang=v.lang;}
-      if(k===0)u.onstart=()=>{if(my===talkId)mouth(i,true);};
-      u.onend=u.onerror=()=>{if(my===talkId&&k===parts.length-1)mouth(i,false);};
+
+      u.pitch=p[0];
+      u.rate=p[1];
+      u.lang="en-GB";
+
+      if(v){
+        u.voice=v;
+        u.lang=v.lang;
+      }
+
+      if(k===0)u.onstart=()=>{
+        if(my===talkId)mouth(i,true);
+      };
+
+      u.onend=u.onerror=()=>{
+        if(my===talkId&&k===parts.length-1)mouth(i,false);
+      };
+
       speechSynthesis.speak(u);
     });
+
   }catch(e){}
 }
 
@@ -288,18 +396,36 @@ function fmt(m){
 /* ---- A planet with a sleepy face (eyes closed) and an awake face (eyes open) ---- */
 function face(cx,cy,r,c,name,i){
   const lw=Math.max(2,r*.09);
+
   let s=`<g id="pg${i}" class="pgrp">`;
-  if(name==="Sun")s+=`<circle cx="${cx}" cy="${cy}" r="${r+12}" fill="${c}" opacity=".25"/>`;
+
+  if(name==="Sun")
+    s+=`<circle cx="${cx}" cy="${cy}" r="${r+12}" fill="${c}" opacity=".25"/>`;
+
   s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}" stroke="#0007" stroke-width="3"/>`;
-  if(name==="Saturn")s+=`<ellipse cx="${cx}" cy="${cy}" rx="${r*1.75}" ry="${r*.42}" fill="none" stroke="#f4e6b0" stroke-width="${r*.14}" transform="rotate(-14 ${cx} ${cy})"/>`;
 
-  s+=`<g id="ec${i}"><path d="M${cx-r*.5} ${cy-r*.12} Q${cx-r*.33} ${cy+r*.12} ${cx-r*.16} ${cy-r*.12}" fill="none" stroke="#1b1030" stroke-width="${lw}" stroke-linecap="round"/><path d="M${cx+r*.16} ${cy-r*.12} Q${cx+r*.33} ${cy+r*.12} ${cx+r*.5} ${cy-r*.12}" fill="none" stroke="#1b1030" stroke-width="${lw}" stroke-linecap="round"/></g>`;
+  if(name==="Saturn")
+    s+=`<ellipse cx="${cx}" cy="${cy}" rx="${r*1.75}" ry="${r*.42}" fill="none" stroke="#f4e6b0" stroke-width="${r*.14}" transform="rotate(-14 ${cx} ${cy})"/>`;
 
-  s+=`<g id="eo${i}" class="eo" display="none"><circle cx="${cx-r*.33}" cy="${cy-r*.15}" r="${r*.22}" fill="#fff"/><circle cx="${cx+r*.33}" cy="${cy-r*.15}" r="${r*.22}" fill="#fff"/><circle cx="${cx-r*.29}" cy="${cy-r*.1}" r="${r*.11}" fill="#1b1030"/><circle cx="${cx+r*.37}" cy="${cy-r*.1}" r="${r*.11}" fill="#1b1030"/></g>`;
+  s+=`<g id="ec${i}">
+    <path d="M${cx-r*.5} ${cy-r*.12} Q${cx-r*.33} ${cy+r*.12} ${cx-r*.16} ${cy-r*.12}" fill="none" stroke="#1b1030" stroke-width="${lw}" stroke-linecap="round"/>
+    <path d="M${cx+r*.16} ${cy-r*.12} Q${cx+r*.33} ${cy+r*.12} ${cx+r*.5} ${cy-r*.12}" fill="none" stroke="#1b1030" stroke-width="${lw}" stroke-linecap="round"/>
+  </g>`;
 
-  s+=`<g id="mo${i}" class="mouth"><path d="M${cx-r*.36} ${cy+r*.25} Q${cx} ${cy+r*.75} ${cx+r*.36} ${cy+r*.25}" fill="none" stroke="#1b1030" stroke-width="${lw}" stroke-linecap="round"/></g>`;
+  s+=`<g id="eo${i}" class="eo" display="none">
+    <circle cx="${cx-r*.33}" cy="${cy-r*.15}" r="${r*.22}" fill="#fff"/>
+    <circle cx="${cx+r*.33}" cy="${cy-r*.15}" r="${r*.22}" fill="#fff"/>
+    <circle cx="${cx-r*.29}" cy="${cy-r*.1}" r="${r*.11}" fill="#1b1030"/>
+    <circle cx="${cx+r*.37}" cy="${cy-r*.1}" r="${r*.11}" fill="#1b1030"/>
+  </g>`;
+
+  s+=`<g id="mo${i}" class="mouth">
+    <path d="M${cx-r*.36} ${cy+r*.25} Q${cx} ${cy+r*.75} ${cx+r*.36} ${cy+r*.25}" fill="none" stroke="#1b1030" stroke-width="${lw}" stroke-linecap="round"/>
+  </g>`;
+
   s+=`<text id="zz${i}" class="zz" x="${cx+r*.62}" y="${cy-r*.62}" font-size="${Math.max(14,r*.55)}" fill="#fff7e0">z</text>`;
   s+=`</g>`;
+
   return s;
 }
 
@@ -307,52 +433,92 @@ function calc(D){
   const S=P[0][2],kN=P[8][2]/S;
   const R=0.01175*D;
   const au=(D-R*(1+kN))/30.06,k=R/S;
-  return{R,au,rows:P.map(p=>({n:p[0],x:R+p[1]*au,r:p[2]*k,c:p[3],d:p[4]}))};
+
+  return{
+    R,
+    au,
+    rows:P.map(p=>({
+      n:p[0],
+      x:R+p[1]*au,
+      r:p[2]*k,
+      c:p[3],
+      d:p[4]
+    }))
+  };
 }
 
 function show(){
-  stopAudio();if("speechSynthesis" in window)speechSynthesis.cancel();
+  stopAudio();
+
+  if("speechSynthesis" in window)
+    speechSynthesis.cancel();
 
   const D=parseFloat($("len").value);
-  if(!(D>=20)){$("e").innerHTML='<div class="err">Please type a road length of at least 20 metres.</div>';return;}
-  if(D>5000){$("e").innerHTML='<div class="err">That is a very long road! Try 5,000 metres or less.</div>';return;}
+
+  if(!(D>=20)){
+    $("e").innerHTML='<div class="err">Please type a road length of at least 20 metres.</div>';
+    return;
+  }
+
+  if(D>5000){
+    $("e").innerHTML='<div class="err">That is a very long road! Try 5,000 metres or less.</div>';
+    return;
+  }
 
   $("e").innerHTML="";
+
   const {R,au,rows}=calc(D);
   const Dtxt=(Math.round(D*100)/100).toString();
+
   $("rt").textContent="Your Solar System on a "+Dtxt+" m road";
 
   const x0=40,w=920,roadY=330;
+
   let s=`<rect x="${x0}" y="${roadY}" width="${w}" height="56" rx="10" fill="#3a3f5c"/>`;
+
   s+=`<line x1="${x0+8}" y1="${roadY+28}" x2="${x0+w-8}" y2="${roadY+28}" stroke="#ffcb2f" stroke-width="4" stroke-dasharray="22 16"/>`;
+
   s+=`<text x="${x0}" y="${roadY+80}" fill="#fff7e0" font-size="22" font-weight="800" font-family="Nunito,sans-serif">Start (0 m)</text>`;
+
   s+=`<text x="${x0+w}" y="${roadY+80}" text-anchor="end" fill="#fff7e0" font-size="22" font-weight="800" font-family="Nunito,sans-serif">End (${Dtxt} m)</text>`;
 
   rows.forEach((p,i)=>{
     const sx=60+i*110,px=x0+p.x/D*w;
+
     s+=`<line x1="${sx}" y1="212" x2="${px}" y2="${roadY+28}" stroke="${p.c}" stroke-width="3" stroke-dasharray="7 6" opacity=".9"/>`;
+
     s+=`<circle cx="${px}" cy="${roadY+28}" r="${Math.max(p.r/D*w,1.6)}" fill="${p.c}" stroke="#fff" stroke-width="${i===0?1.2:.7}"/>`;
+
     s+=`<circle id="hl${i}" cx="${sx}" cy="110" r="${p.d+14}" fill="none" stroke="#fff" stroke-width="4" opacity="0"/>`;
+
     s+=face(sx,110,p.d,p.c,p.n,i);
+
     s+=`<text x="${sx}" y="182" text-anchor="middle" fill="#fff7e0" font-size="21" font-weight="800" font-family='Baloo 2,Nunito,sans-serif'>${p.n}</text>`;
+
     s+=`<text x="${sx}" y="204" text-anchor="middle" fill="#c9c3f0" font-size="17" font-family="Nunito,sans-serif">${p.x.toFixed(2)} m</text>`;
+
     const hy=110-p.d-16;
+
     s+=`<rect class="pl" data-i="${i}" tabindex="0" role="button" aria-label="Wake up ${p.n}" x="${sx-52}" y="${hy}" width="104" height="${214-hy}" rx="18" fill="transparent"/>`;
   });
 
   $("svg").innerHTML=s;
+
   $("bubble").textContent="The planets are fast asleep. Tap a planet to wake it up!";
   $("bubble").style.borderColor="";
 
   const wake=i=>{
     rows.forEach((_,j)=>{
       const awake=j===i;
+
       $("eo"+j).setAttribute("display",awake?"inline":"none");
       $("ec"+j).setAttribute("display",awake?"none":"inline");
       $("zz"+j).setAttribute("display",awake?"none":"inline");
       $("hl"+j).setAttribute("opacity",awake?1:0);
+
       if(!awake)mouth(j,false);
     });
+
     const g=$("pg"+i);
     g.classList.remove("hop");
     g.getBoundingClientRect();
@@ -368,7 +534,9 @@ function show(){
 
   $("svg").querySelectorAll(".pl").forEach(el=>{
     const i=+el.getAttribute("data-i");
+
     el.onclick=()=>pick(i);
+
     el.onkeydown=e=>{
       if(e.key==="Enter"||e.key===" "){
         e.preventDefault();
@@ -379,15 +547,30 @@ function show(){
 
   $("cards").innerHTML=rows.map((p,i)=>{
     let t;
-    if(i===0)t=`Its <em>centre</em> goes ${p.x.toFixed(2)} m from the start, so its left edge touches the start of the road. Draw a circle of radius <em>${fmt(p.r)}</em>. The Sun is big!`;
-    else t=`Walk <em>${p.x.toFixed(2)} m</em> from the start and place ${p.n} here. Draw a circle of radius <em>${fmt(p.r)}</em>.`;
+
+    if(i===0)
+      t=`Its <em>centre</em> goes ${p.x.toFixed(2)} m from the start, so its left edge touches the start of the road. Draw a circle of radius <em>${fmt(p.r)}</em>. The Sun is big!`;
+    else
+      t=`Walk <em>${p.x.toFixed(2)} m</em> from the start and place ${p.n} here. Draw a circle of radius <em>${fmt(p.r)}</em>.`;
+
     if(i===8)t+=` Its edge reaches the end of your road.`;
-    return `<div class="card"><div class="bw"><div class="ball" style="background:${p.c};width:${p.d*1.7}px;height:${p.d*1.7}px"></div></div><div><b>${p.n}</b><p>${t}</p></div></div>`;
+
+    return `<div class="card">
+      <div class="bw">
+        <div class="ball" style="background:${p.c};width:${p.d*1.7}px;height:${p.d*1.7}px"></div>
+      </div>
+      <div>
+        <b>${p.n}</b>
+        <p>${t}</p>
+      </div>
+    </div>`;
   }).join("");
 
   $("fun").textContent="On your road, the Earth is only "+fmt(2*rows[3].r)+" wide, and the Earth–Sun distance is "+fmt(au)+". A ₹1 coin is about 2.5 cm across!";
+
   $("start").hidden=true;
   $("result").hidden=false;
+
   window.scrollTo(0,0);
 }
 
@@ -404,7 +587,7 @@ const hear=()=>{
 $("hear").onclick=hear;
 $("astro").onclick=hear;
 
-/* ---- Starting astronaut voice controls ---- */
+/* ---- Starting astronaut voice pause/resume ---- */
 let introVoicePaused=false;
 
 $("pauseVoice").onclick=()=>{
@@ -421,20 +604,16 @@ $("pauseVoice").onclick=()=>{
   }
 };
 
-$("stopVoice").onclick=()=>{
-  if("speechSynthesis" in window)speechSynthesis.cancel();
-  introVoicePaused=false;
-  $("pauseVoice").textContent="Pause voice";
-  document.querySelectorAll(".mouth").forEach(m=>m.classList.remove("talk"));
-};
-
 $("vt").onclick=()=>{
   voiceOn=!voiceOn;
   $("vt").textContent="Voice: "+(voiceOn?"on":"off");
 
   if(!voiceOn){
     stopAudio();
-    if("speechSynthesis" in window)speechSynthesis.cancel();
+
+    if("speechSynthesis" in window)
+      speechSynthesis.cancel();
+
     document.querySelectorAll(".mouth").forEach(m=>m.classList.remove("talk"));
   }
 };
@@ -445,7 +624,10 @@ $("len").onkeydown=e=>{
 
 $("again").onclick=()=>{
   stopAudio();
-  if("speechSynthesis" in window)speechSynthesis.cancel();
+
+  if("speechSynthesis" in window)
+    speechSynthesis.cancel();
+
   $("result").hidden=true;
   $("start").hidden=false;
   $("len").focus();
@@ -454,4 +636,3 @@ $("again").onclick=()=>{
 </script>
 </body>
 </html>
-    
